@@ -2,3 +2,4 @@
 res/
 *.swp
 data/
+src/transfer_embeddings/transfer_embedding.py
