@@ -10,7 +10,6 @@ import networkx as nx
 import tensorflow as tf
 from operator import itemgetter
 
-from extract_hierarchy import immersion_method as im
 from get_network_hierarchy.get_network import GetNetwork as gn
 #from batch_strategy import BatchStrategy
 from utils.env import *
@@ -19,7 +18,15 @@ from utils.data_handler import DataHandler as dh
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 
-def dfs(u, tree, params, g_mat):
+def dfs(u, tree, gn_handler, params, res_coordinates = None):
+    if res_coordinates is None:
+        res_coordinates = [None] * len(tree)
+        res_coordinates[u] = np.zeros(params["embedding_model"]["embedding_size"])
+    if len(tree[u].childst) == 0:
+        return
+       #to do 
+
+
     
 
 def train_model(params, is_save = True):
@@ -29,10 +36,8 @@ def train_model(params, is_save = True):
     eh = __import__('extract_hierarchy.' + params["extract_hierarchy_model"]["func"], fromlist = ["extract_hierarchy"])
     tree = eh.extract_hierarchy(g_mat, params["extract_hierarchy_model"]["threshold"])
     #print [str(i) for i in tree]
-    #sim_mat, var_mat = gn.get_network(0, tree, g_mat, params["get_network"])
-    #print sim_mat
-    #print var_mat
-    dfs(len(tree) - 1, tree, params, g_mat)
+    gn_handler = gn(g_mat, params["get_network_hierarchy"])
+    dfs(len(tree) - 1, tree, gn_handler,params)
 # to do
 '''
     bs = BatchStrategy(params)

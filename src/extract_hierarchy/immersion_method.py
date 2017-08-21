@@ -149,11 +149,11 @@ def test():
     tree = ExtractHStruc(n, lst_edge, 0.08)
     fa_id = len(tree)-1
     #print [str(i) for i in tree]
-    params = {'sim_method':'common_neighbor_sim'}
-    GN = GetNetwork(t, params)
-    sim_mat, var_mat = GN.get_network(fa_id, tree)
-    print sim_mat
-    print var_mat
+    #params = {'sim_method':'common_neighbor_sim'}
+    #GN = GetNetwork(t, params)
+    #sim_mat, var_mat = GN.get_network(fa_id, tree)
+    #print sim_mat
+    #print var_mat
 
 if __name__ == '__main__':
     test()
