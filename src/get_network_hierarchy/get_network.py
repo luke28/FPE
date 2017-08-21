@@ -8,6 +8,10 @@ import math
 #from extract_hierarchy.ExtractHierarchicalStruc import Node
 
 class GetNetwork(object):
+    def __init__(self, adj_mat_, params):
+        self.sim_mat_n = eval("GetNetwork."+params['sim_method'])(adj_mat_)
+        self.n = len(adj_mat_)
+
     @staticmethod
     def common_neighbor_sim(adj_mat_):
         n = len(adj_mat_)
@@ -28,22 +32,8 @@ class GetNetwork(object):
 
         return sim_mat
 
-
-    @staticmethod
-    def get_network(fa_id, tree, adj_mat_, params):
-        # init 01 adj_mat
-        n = len(adj_mat_)
-        adj_mat = np.zeros([n,n])+adj_mat_
-        # set diagonal elements
-        for i in xrange(n):
-            adj_mat[i][i] = 1
-        adj_mat[np.where(adj_mat > 0)] = 1
-        #print params['sim_method']
-        sim_mat_n = eval("GetNetwork."+params['sim_method'])(adj_mat)
-
-        #print "sim_mat_n\n"
-        #print sim_mat_n
-        
+    def get_network(self, fa_id, tree):
+        n = self.n 
         childst = list(tree[fa_id].childst)
         n_ch = len(childst)
         #print "childst: \n"
@@ -72,9 +62,9 @@ class GetNetwork(object):
                         for q in coverst_j:
                             mask_mat[p][q] = 1
 
-                    mat = mask_mat*sim_mat_n
-                    #print "mat"
-                    #print mat
+                    mat = mask_mat*self.sim_mat_n
+                    # print "mat"
+                    # print mat
                     i2j_tmp = np.sum(mat, axis=1)
                     i2j = [i2j_tmp[t]/len_j for t in coverst_i]
                     #print "i2j:"
