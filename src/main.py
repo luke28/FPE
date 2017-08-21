@@ -11,19 +11,30 @@ import tensorflow as tf
 from operator import itemgetter
 
 from extract_hierarchy import immersion_method as im
-from batch_strategy import BatchStrategy
+from get_network_hierarchy.get_network import GetNetwork as gn
+#from batch_strategy import BatchStrategy
 from utils.env import *
 from utils.data_handler import DataHandler as dh
-from utils.metric import Metric
+#from utils.metric import Metric
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 
-def train_model(params, is_save = True):
-    g = dh.load_graph(params["network_file"])
-    g_mat = dh.transfer_to_matrix(g)
-    eh = __import__('extract_hierarchy.' + params["extract_hierarchy_model"]["func"], fromlist = ["extract_hierarchy"])
-# to do
+def dfs(u, tree, params, g_mat):
+    
 
+def train_model(params, is_save = True):
+    g = dh.load_graph(os.path.join(DATA_PATH, params["network_file"]))
+    g_mat = dh.transfer_to_matrix(g)
+    #print g_mat
+    eh = __import__('extract_hierarchy.' + params["extract_hierarchy_model"]["func"], fromlist = ["extract_hierarchy"])
+    tree = eh.extract_hierarchy(g_mat, params["extract_hierarchy_model"]["threshold"])
+    #print [str(i) for i in tree]
+    #sim_mat, var_mat = gn.get_network(0, tree, g_mat, params["get_network"])
+    #print sim_mat
+    #print var_mat
+    dfs(len(tree) - 1, tree, params, g_mat)
+# to do
+'''
     bs = BatchStrategy(params)
     module = __import__(params["model"]).NodeSkipGram
     nkg = module(params)
@@ -38,7 +49,7 @@ def train_model(params, is_save = True):
         except OSError:
             os.remove(os.path.join(RES_PATH, "TrainRes"))
             os.symlink(file_path, os.path.join(RES_PATH, "TrainRes"))
-
+'''
 def metric(params):
     G_truth = dh.load_ground_truth(os.path.join(DATA_PATH, params["ground_truth_file"]))
     ret = []

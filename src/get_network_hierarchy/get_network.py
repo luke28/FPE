@@ -5,7 +5,7 @@ import os
 import numpy as np
 import math
 
-from extract_hierarchy.ExtractHierarchicalStruc import Node
+#from extract_hierarchy.ExtractHierarchicalStruc import Node
 
 class GetNetwork(object):
     @staticmethod
@@ -40,7 +40,7 @@ class GetNetwork(object):
         adj_mat[np.where(adj_mat > 0)] = 1
         #print params['sim_method']
         sim_mat_n = eval("GetNetwork."+params['sim_method'])(adj_mat)
-        
+
         #print "sim_mat_n\n"
         #print sim_mat_n
         
