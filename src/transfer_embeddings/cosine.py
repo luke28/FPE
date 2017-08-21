@@ -44,15 +44,25 @@ class TransferEmbedding(object):
             z = sess.run(self.Z)
             return z / np.linalg.norm(z, axis = 1, keepdims = True), sess.run(self.dist)
 
+    def transfer(self, X, xc, r):
+        X = np.array(X)
+        xc = np.array(xc)
+        a = np.square(np.linalg.norm(X, axis = 1, keepdims = True))
+        D = -2 * np.dot(X, np.transpose(X)) + a + np.transpose(a)
+        Z, dic = self.train(D)
+        print(Z, dic)
+        Z = Z * r + xc
+        return Z
+
+
 def main():
     params = {'learn_rate': 0.001, 'embedding_size': 2, 'num_nodes': 3}
     cli = TransferEmbedding(params)
     X = np.array([[0,0], [3, 0], [0, 4]], dtype = np.float64)
-    a = np.square(np.linalg.norm(X, axis = 1, keepdims = True))
-    D = -2 * np.dot(X, np.transpose(X)) + a + np.transpose(a)
-    Z, dic = cli.train(D)
+    xc = [1, 1]
+    r = [3]
+    Z = cli.transfer(X, xc, r)
     print Z
-    print dic
 
 if __name__ == "__main__":
     main()

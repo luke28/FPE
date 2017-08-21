@@ -1,0 +1,22 @@
+{
+    "network_file": "test_graph",
+    "num_node": 8,
+    "embedding_model":{
+        "func": "weighted_skip_gram",
+        "iteration": 5001,
+        "batch_func": "sequential_avg",
+        "batch_size": 10,
+        "learn_rate": 0.001,
+        "embedding_size": 50
+    },
+    "extract_hierarchy_model":{
+        "func": "immersion_method",
+        "threshold": 0.02
+    },
+    "transfer_embedding":{
+        "func": "cosine",
+        "iteration": 3001,
+        "optimizer": "GradientDescentOptimizer",
+        "learn_rate": 0.001
+    }
+}

@@ -5,12 +5,6 @@ import os
 import numpy as np
 import math
 
-FILE_DIR = os.path.dirname(os.path.abspath(__file__))
-#print os.path.join(FILE_DIR, '..')
-sys.path.insert(0, os.path.join(FILE_DIR, '..'))
-from utils.env import *
-from get_network_hierarchy.get_network import *
-
 class Node:
     def __init__(self, id, childst, coverst):
         self.id = id
@@ -46,7 +40,7 @@ class UnionFind:
             del self.sets[fa_i]
             del self.sets[fa_j]
             self.sets[self.father[fa_j]] = newset
-        
+
 def CalSimMatrix(adj_mat_):
     n = len(adj_mat_)
     # init diagonal = 1
@@ -111,6 +105,9 @@ def ExtractHStruc(n, lst_edge, thres):
             uf.union(e[0], e[1])
 
     # generate the root node of tree
+    if len(uf.sets) == 1:
+        return tree
+
     childst = set()
     for key in uf.sets:
         childst = childst | uf.sets[key]
@@ -138,22 +135,17 @@ def extract_hierarchy(adj_matrix, thres):
     return tree
 
 def test():
-    t = np.array([[1,1,1,1,0,0,0,0],[1,1,1,1,0,0,0,0],[1,1,1,1,1,0,0,0],[1,1,1,1,1,0,0,0],[0,0,1,1,1,0,0,1],[0,0,0,0,0,1,1,1],[0,0,0,0,0,1,1,0],[0,0,0,0,1,1,0,1]])
-    #t = np.array([[1,1,0,0],[1,1,1,0],[0,1,1,1],[0,0,1,1]])
+    #t = np.array([[1,1,1,1,0,0,0,0],[1,1,1,1,0,0,0,0],[1,1,1,1,1,0,0,0],[1,1,1,1,1,0,0,0],[0,0,1,1,1,0,0,1],[0,0,0,0,0,1,1,1],[0,0,0,0,0,1,1,0],[0,0,0,0,1,1,0,1]])
+    t = np.array([[1,1,0,0],[1,1,1,0],[0,1,1,1],[0,0,1,1]])
     sim_matrix = CalSimMatrix(t)
-    #print "sim_matrix: \n"
-    #print sim_matrix
+    print "sim_matrix: \n"
+    print sim_matrix
     lst_edge = GetEdges(sim_matrix)
-    #print "lst_edges: \n"
-    #print lst_edge
+    print "lst_edges: \n"
+    print lst_edge
     n = len(sim_matrix)
     tree = ExtractHStruc(n, lst_edge, 0.08)
-    fa_id = len(tree)-1
-    #print [str(i) for i in tree]
-    params = {'sim_method':'common_neighbor_sim'}
-    sim_mat, var_mat = GetNetwork.get_network(fa_id, tree, t, params)
-    #print sim_mat
-    #print var_mat
+    print [str(i) for i in tree]
 
 if __name__ == '__main__':
     test()

@@ -9,19 +9,25 @@ import math
 
 class DataHandler(object):
     @staticmethod
-    def load_cascades(file_path):
-        data_set = []
+    def load_graph(file_path):
+        G = nx.Graph()
         with open(file_path, "r") as f:
             for line in f:
                 line = line.strip()
                 if len(line) == 0:
                     continue
-                items = line.split("\t")
-                tmp = []
-                for i in xrange(0, len(items), 2):
-                    tmp.append((int(items[i]),float(items[i+1])))
-                data_set.append(tmp)
-        return data_set
+                items = line.split()
+                G.add_edge(int(items[0]), int(items[1]))
+        return G
+
+    @staticmethod
+    def transfer_to_matrix(graph):
+        n = graph.number_of_nodes()
+        mat = np.zeros([n, n])
+        for e in graph.edges():
+            mat[e[0]][e[1]] = 1
+            mat[e[1]][e[0]] = 1
+        return mat
 
     @staticmethod
     def load_json_file(file_path):
@@ -35,17 +41,6 @@ class DataHandler(object):
         with open(file_path, "a") as f:
             a.write(s)
 
-    @staticmethod
-    def load_ground_truth(file_path):
-        G = nx.DiGraph()
-        with open(file_path, "r") as f:
-            for line in f:
-                line = line.strip()
-                if len(line) == 0:
-                    continue
-                items = line.split(",")
-                G.add_edge(int(items[0]), int(items[1]))
-        return G
 
     @staticmethod
     def cal_average_delta(data_set,
