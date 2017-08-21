@@ -151,7 +151,8 @@ def test():
     #print [str(i) for i in tree]
     #params = {'sim_method':'common_neighbor_sim'}
     #GN = GetNetwork(t, params)
-    #sim_mat, var_mat = GN.get_network(fa_id, tree)
+    #node_in_tree, sim_mat, var_mat = GN.get_network(fa_id, tree)
+    #print node_in_tree
     #print sim_mat
     #print var_mat
 

@@ -38,6 +38,9 @@ class GetNetwork(object):
         n_ch = len(childst)
         #print "childst: \n"
         #print childst
+        node_in_tree = []
+        for i in xrange(n_ch):
+            node_in_tree.append(childst[i])
 
         # return matrix
         sim_mat = np.zeros([n_ch, n_ch])
@@ -77,5 +80,5 @@ class GetNetwork(object):
                     #print j2i
                     var_mat[j][i] = np.std(j2i)
 
-        return sim_mat, var_mat
+        return node_in_tree, sim_mat, var_mat
 
