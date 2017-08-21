@@ -3,7 +3,7 @@
     "num_node": 8,
     "max_radius": 10,
     "scaling_radius": 3.0,
-    "node_embedding":{
+    "embedding_model":{
         "func": "weighted_embedding",
         "iteration": 5001,
         "batch_func": "sequential_avg",
@@ -13,7 +13,7 @@
     },
     "extract_hierarchy_model":{
         "func": "immersion_method",
-        "threshold": 0.02
+        "threshold": 0.1
     },
     "get_network_hierarchy":{
         "sim_method": "common_neighbor_sim"

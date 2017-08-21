@@ -84,7 +84,7 @@ def ExtractHStruc(n, lst_edge, thres):
     # init Tree 
     tree = []
     for i in range(n):
-        tree.append(Node(i, set([i]), set([i])))
+        tree.append(Node(i, set(), set([i])))
     n_tr = n
 
     # init the weight of edge of latest snapshot

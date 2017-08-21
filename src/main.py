@@ -24,10 +24,15 @@ def dfs(u, tree, gn_handler, params, res_coordinates = None):
         res_coordinates[u] = np.zeros(params["embedding_model"]["embedding_size"])
     if len(tree[u].childst) == 0:
         return
-       #to do 
+    node_in_tree, sim_mat, var_mat = gn_handler.get_network(u, tree)
+    print u
+    print node_in_tree
+    print sim_mat
+    print var_mat
 
+    for v in tree[u].childst:
+        dfs(v, tree, gn_handler, params, res_coordinates)
 
-    
 
 def train_model(params, is_save = True):
     g = dh.load_graph(os.path.join(DATA_PATH, params["network_file"]))
@@ -35,7 +40,8 @@ def train_model(params, is_save = True):
     #print g_mat
     eh = __import__('extract_hierarchy.' + params["extract_hierarchy_model"]["func"], fromlist = ["extract_hierarchy"])
     tree = eh.extract_hierarchy(g_mat, params["extract_hierarchy_model"]["threshold"])
-    #print [str(i) for i in tree]
+
+    print [str(i) for i in tree]
     gn_handler = gn(g_mat, params["get_network_hierarchy"])
     dfs(len(tree) - 1, tree, gn_handler,params)
 # to do
