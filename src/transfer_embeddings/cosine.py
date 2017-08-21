@@ -44,12 +44,12 @@ class TransferEmbedding(object):
             z = sess.run(self.Z)
             return z / np.linalg.norm(z, axis = 1, keepdims = True), sess.run(self.dist)
 
-    def transfer(self, X, xc, r):
+    def transfer(self, X, xc, r, epoch_num = 10001, save_path= None):
         X = np.array(X)
         xc = np.array(xc)
         a = np.square(np.linalg.norm(X, axis = 1, keepdims = True))
         D = -2 * np.dot(X, np.transpose(X)) + a + np.transpose(a)
-        Z, dic = self.train(D)
+        Z, dic = self.train(D, epoch_num, save_path)
         print(Z, dic)
         Z = Z * r + xc
         return Z

@@ -3,13 +3,13 @@
     "num_node": 8,
     "max_radius": 10,
     "scaling_radius": 3.0,
-    "embedding_model":{
-        "func": "weighted_skip_gram",
+    "node_embedding":{
+        "func": "weighted_embedding",
         "iteration": 5001,
         "batch_func": "sequential_avg",
         "batch_size": 10,
         "learn_rate": 0.001,
-        "embedding_size": 50
+        "embedding_size": 2
     },
     "extract_hierarchy_model":{
         "func": "immersion_method",
