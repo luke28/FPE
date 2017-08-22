@@ -1,15 +1,19 @@
 {
     "network_file": "test_graph",
-    "num_node": 8,
-    "max_radius": 10,
+    "num_nodes": 8,
+    "init_radius": 10,
     "scaling_radius": 3.0,
+    "radius_min": 0.05,
+    "radius_max": 0.25,
     "embedding_model":{
         "func": "weighted_embedding",
         "iteration": 5001,
-        "batch_func": "sequential_avg",
+        "batch_func": "sequential_weighted",
         "batch_size": 10,
         "learn_rate": 0.001,
-        "embedding_size": 2
+        "embedding_size": 2,
+        "loss_func": "cross_entropy",
+        "optimizer": "AdamOptimizer"
     },
     "extract_hierarchy_model":{
         "func": "immersion_method",
@@ -18,10 +22,11 @@
     "get_network_hierarchy":{
         "sim_method": "common_neighbor_sim"
     },
-    "transfer_embedding":{
+    "transfer_embeddings":{
         "func": "cosine",
         "iteration": 3001,
         "optimizer": "GradientDescentOptimizer",
+        "embedding_size": 2,
         "learn_rate": 0.001
     }
 }

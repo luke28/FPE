@@ -10,9 +10,9 @@ class TransferEmbedding(object):
 
         self.tensor_graph = tf.Graph()
         with self.tensor_graph.as_default():
-            self.D = tf.placeholder(tf.float64, shape = [self.num_nodes, self.num_nodes])
+            self.D = tf.placeholder(tf.float32, shape = [self.num_nodes, self.num_nodes])
 
-            self.Z = tf.Variable(tf.random_uniform([self.num_nodes, self.embedding_size], -1.0, 1.0, dtype = tf.float64), name = "Z", dtype = tf.float64)
+            self.Z = tf.Variable(tf.random_uniform([self.num_nodes, self.embedding_size], -1.0, 1.0), name = "Z", dtype = tf.float32)
 
             # shape(a) = [n, 1]
             self.a = tf.norm(self.Z, axis = 1, keep_dims = True)
@@ -28,7 +28,7 @@ class TransferEmbedding(object):
             sess.run(tf.global_variables_initializer())
             for i in xrange(epoch_num):
                 self.train_step.run({self.D : D})
-                if (i % 100 == 0):
+                if (i % 1000 == 0):
                     print(self.loss.eval({self.D : D}))
             if save_path is not None:
                 saver = tf.train.Saver()
@@ -45,12 +45,14 @@ class TransferEmbedding(object):
             return z / np.linalg.norm(z, axis = 1, keepdims = True), sess.run(self.dist)
 
     def transfer(self, X, xc, r, epoch_num = 10001, save_path= None):
+        print "transfer_embeddings:"
         X = np.array(X)
         xc = np.array(xc)
         a = np.square(np.linalg.norm(X, axis = 1, keepdims = True))
         D = -2 * np.dot(X, np.transpose(X)) + a + np.transpose(a)
         Z, dic = self.train(D, epoch_num, save_path)
-        print(Z, dic)
+        print Z
+        print dic
         Z = Z * r + xc
         return Z
 
@@ -58,7 +60,7 @@ class TransferEmbedding(object):
 def main():
     params = {'learn_rate': 0.001, 'embedding_size': 2, 'num_nodes': 3}
     cli = TransferEmbedding(params)
-    X = np.array([[0,0], [3, 0], [0, 4]], dtype = np.float64)
+    X = np.array([[0,0], [3, 0], [0, 4]], dtype = np.float32)
     xc = [1, 1]
     r = [3]
     Z = cli.transfer(X, xc, r)

@@ -5,33 +5,75 @@ import json
 import math
 import argparse
 import time
+import subprocess
 import numpy as np
 import networkx as nx
 import tensorflow as tf
 from operator import itemgetter
 
 from get_network_hierarchy.get_network import GetNetwork as gn
-#from batch_strategy import BatchStrategy
+from utils.batch_strategy import BatchStrategy
 from utils.env import *
 from utils.data_handler import DataHandler as dh
 #from utils.metric import Metric
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 
-def dfs(u, tree, gn_handler, params, res_coordinates = None):
-    if res_coordinates is None:
+def dfs(u, tree, handlers, params, res_radius, res_coordinates):
+    if len(res_coordinates) == 0:
         res_coordinates = [None] * len(tree)
-        res_coordinates[u] = np.zeros(params["embedding_model"]["embedding_size"])
+        res_coordinates[u] = np.zeros(params["embedding_model"]["embedding_size"], dtype = np.float32)
+
+        res_radius = [None] * len(tree)
+        res_radius[u] = float(params["init_radius"])
+
     if len(tree[u].childst) == 0:
         return
-    node_in_tree, sim_mat, var_mat = gn_handler.get_network(u, tree)
+    node_in_tree, sim_mat, var_mat = handlers["get_network"].get_network(u, tree)
+
     print u
     print node_in_tree
     print sim_mat
     print var_mat
+    raw_input()
+
+    # neural embedding
+    sim_mat_norm = dh.normalize_adj_matrix(sim_mat)
+    bs = BatchStrategy(sim_mat_norm)
+    params["embedding_model"]["num_nodes"] = len(sim_mat_norm)
+    ne = handlers["embedding_model"](params["embedding_model"])
+    X = ne.train(getattr(bs, params["embedding_model"]["batch_func"]), params["embedding_model"]["iteration"])
+    print(X)
+    raw_input()
+
+    # transfer embedding
+    params["transfer_embeddings"]["num_nodes"] = len(sim_mat_norm)
+
+    te = handlers["transfer_embeddings"](params["transfer_embeddings"])
+    Z = te.transfer(X, res_coordinates[u], res_radius[u], params["transfer_embeddings"]["iteration"])
+    for i in xrange(len(node_in_tree)):
+        res_coordinates[node_in_tree[i]] = Z[i]
+    raw_input()
+
+    # cal radius
+    r = np.zeros(len(node_in_tree), dtype = np.float32)
+    cnt = np.zeros(len(r), dtype = np.float32)
+    for i in xrange(len(r)):
+        for j in xrange(len(r)):
+            if sim_mat[i][j] > sys.float_info.epsilon:
+                r[i] += var_mat[i][j] / (sim_mat[i][j] * params["scaling_radius"]) * np.linalg.norm(res_coordinates[node_in_tree[i]] - res_coordinates[node_in_tree[j]])
+                cnt[i] += 1.0
+    
+    for i in xrange(len(r)):
+        if cnt[i] > sys.float_info.epsilon:
+            r[i] = r[i] / cnt[i]
+        res_radius[node_in_tree[i]] = min(params["radius_max"] * res_radius[u], max(params["radius_min"] * res_radius[u], r[i]))
+
+    print res_radius
+    raw_input()
 
     for v in tree[u].childst:
-        dfs(v, tree, gn_handler, params, res_coordinates)
+        dfs(v, tree, handlers, params, res_radius, res_coordinates)
 
 
 def train_model(params, is_save = True):
@@ -42,14 +84,17 @@ def train_model(params, is_save = True):
     tree = eh.extract_hierarchy(g_mat, params["extract_hierarchy_model"]["threshold"])
 
     print [str(i) for i in tree]
-    gn_handler = gn(g_mat, params["get_network_hierarchy"])
-    dfs(len(tree) - 1, tree, gn_handler,params)
-# to do
+    raw_input()
+    handlers = {}
+    handlers["get_network"] = gn(g_mat, params["get_network_hierarchy"])
+    handlers["embedding_model"] = __import__('node_embedding.' + params["embedding_model"]["func"], fromlist = ["node_embedding"]).NodeEmbedding
+    handlers["transfer_embeddings"] = __import__('transfer_embeddings.' + params["transfer_embeddings"]["func"], fromlist = ["transfer_embeddings"]).TransferEmbedding
+
+    res_radius = []
+    res_coordinates = []
+    dfs(len(tree) - 1, tree, handlers, params, res_radius, res_coordinates)
+
 '''
-    bs = BatchStrategy(params)
-    module = __import__(params["model"]).NodeSkipGram
-    nkg = module(params)
-    embeddings, coefficient = nkg.Train(getattr(bs, params["batch_func"]), epoch_num = params["iteration"])
     if is_save:
         d = {"embeddings": embeddings.tolist(), "coefficient": coefficient.tolist()}
         file_path = os.path.join(RES_PATH, "training_res_" + str(int(time.time() * 1000.0)))

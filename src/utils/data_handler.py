@@ -30,6 +30,12 @@ class DataHandler(object):
         return mat
 
     @staticmethod
+    def normalize_adj_matrix(g):
+        # diagonal should be 1
+        mat_ret = g / np.sum(g, axis = 1, keepdims = True)
+        return mat_ret
+
+    @staticmethod
     def load_json_file(file_path):
         with open(file_path, "r") as f:
             s = f.read()
