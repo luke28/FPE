@@ -70,6 +70,7 @@ def dfs(u, tree, handlers, params, res_radius, res_coordinates):
         res_radius[node_in_tree[i]] = min(params["radius_max"] * res_radius[u], max(params["radius_min"] * res_radius[u], r[i]))
 
     print res_radius
+    print res_coordinates
     raw_input()
 
     for v in tree[u].childst:
