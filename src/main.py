@@ -15,6 +15,7 @@ from get_network_hierarchy.get_network import GetNetwork as gn
 from utils.batch_strategy import BatchStrategy
 from utils.env import *
 from utils.data_handler import DataHandler as dh
+from calculate_euclidean_fractal.cal.fractal import CalFractal as cf
 #from utils.metric import Metric
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -55,7 +56,7 @@ def dfs(u, tree, handlers, params, res_radius, res_coordinates):
         ne = handlers["embedding_model"](params["embedding_model"])
         X = ne.train(getattr(bs, params["embedding_model"]["batch_func"]), params["embedding_model"]["iteration"])
         print(X)
-        print(dh.cal_euclidean(X))
+        print(dh.cal_euclidean_distance(X))
         raw_input()
 
         # transfer embedding
@@ -107,6 +108,9 @@ def train_model(params, is_save = True):
     res_coordinates = []
     dfs(len(tree) - 1, tree, handlers, params, res_radius, res_coordinates)
 
+    print res_radius
+    print res_coordinates
+    
 '''
     if is_save:
         d = {"embeddings": embeddings.tolist(), "coefficient": coefficient.tolist()}

@@ -4,13 +4,16 @@ import matplotlib.pyplot as plt
 
 class CalFractal(object):
     @staticmethod
-    def rn_box_cover(l, nsample):
+    def rn_box_cover(l, nsample, d, nodes):
+        xmin = np.amin(nodes, axis=0)
+        xmax = np.amax(nodes, axis=0)
+        count = np.size(nodes, 0)
         N_array = np.zeros(nsample)
-        for i in range(nsample):
+        for i in xrange(nsample):
             cover = dict()
-            x0 = xmin -  rd.uniform(0, l, size=d)
+            x0 = xmin - rd.uniform(0, l, size=d)
             #print(x0)
-            for j in range(count):
+            for j in xrange(count):
                 foo = (nodes[j] - x0) / l
                 cover[tuple(foo.astype(int))]=1
                 #cover[ np.floor((nodes[j]-x0))/l ] = 1
@@ -20,8 +23,8 @@ class CalFractal(object):
 
     @staticmethod
     def rn_fractal(nodes, d, params, save_path = None):
-        xmin = np.amin(nodes, axis=0 )
-        xmax = np.amax(nodes, axis=0 )
+        xmin = np.amin(nodes, axis=0)
+        xmax = np.amax(nodes, axis=0)
         count = np.size(nodes, 0)
         L = max(xmax-xmin)
 
@@ -33,7 +36,7 @@ class CalFractal(object):
         N = 1
 
         while N < count:
-            N = CalFractal.box_cover(l, nsample)
+            N = CalFractal.rn_box_cover(l, nsample, d, nodes)
             l_list.append(l)
             N_list.append(N)
             l = l / 2
@@ -55,7 +58,7 @@ class CalFractal(object):
 def main():
     nodes = np.array([[0,0,0], [0,0,1], [0,1,0], [0,1,1], [1,0,0], [1,0,1], [1,1,0], [1,1,1]])
     params = {"nsample": 3000}
-    print(rn_fractal(nodes, 3))
+    print(CalFractal.rn_fractal(nodes, 3, params))
 
 if __name__ == "__main__":
     main()

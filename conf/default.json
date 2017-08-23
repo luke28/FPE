@@ -29,5 +29,9 @@
         "embedding_size": 2,
         "learn_rate": 0.001,
         "clip_min": 0.0000001
+    },
+    "calculate_euclidean_fractal":{
+        "func": "rn_fractal",
+        "nsample": 3000
     }
 }
