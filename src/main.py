@@ -37,23 +37,35 @@ def dfs(u, tree, handlers, params, res_radius, res_coordinates):
     print var_mat
     raw_input()
 
-    # neural embedding
-    sim_mat_norm = dh.normalize_adj_matrix(sim_mat)
-    bs = BatchStrategy(sim_mat_norm)
-    params["embedding_model"]["num_nodes"] = len(sim_mat_norm)
-    ne = handlers["embedding_model"](params["embedding_model"])
-    X = ne.train(getattr(bs, params["embedding_model"]["batch_func"]), params["embedding_model"]["iteration"])
-    print(X)
-    raw_input()
+    if (len(node_in_tree) == 1):
+        rc = np.random.random(size = params["embedding_model"]["embedding_size"]) * 2 - 1
+        print rc
+        print res_radius[u]
+        print res_coordinates[u]
+        print np.linalg.norm(rc)
+        rc = rc / np.linalg.norm(rc) * res_radius[u] + res_coordinates[u]
+        print(rc)
+        res_coordinates[node_in_tree[0]] = rc
+        raw_input()
+    else:
+        # neural embedding
+        sim_mat_norm = dh.normalize_adj_matrix(sim_mat)
+        bs = BatchStrategy(sim_mat_norm)
+        params["embedding_model"]["num_nodes"] = len(sim_mat_norm)
+        ne = handlers["embedding_model"](params["embedding_model"])
+        X = ne.train(getattr(bs, params["embedding_model"]["batch_func"]), params["embedding_model"]["iteration"])
+        print(X)
+        print(dh.cal_euclidean(X))
+        raw_input()
 
-    # transfer embedding
-    params["transfer_embeddings"]["num_nodes"] = len(sim_mat_norm)
+        # transfer embedding
+        params["transfer_embeddings"]["num_nodes"] = len(sim_mat_norm)
 
-    te = handlers["transfer_embeddings"](params["transfer_embeddings"])
-    Z = te.transfer(X, res_coordinates[u], res_radius[u], params["transfer_embeddings"]["iteration"])
-    for i in xrange(len(node_in_tree)):
-        res_coordinates[node_in_tree[i]] = Z[i]
-    raw_input()
+        te = handlers["transfer_embeddings"](params["transfer_embeddings"])
+        Z = te.transfer(X, res_coordinates[u], res_radius[u], params["transfer_embeddings"]["iteration"])
+        for i in xrange(len(node_in_tree)):
+            res_coordinates[node_in_tree[i]] = Z[i]
+        raw_input()
 
     # cal radius
     r = np.zeros(len(node_in_tree), dtype = np.float32)
@@ -63,7 +75,7 @@ def dfs(u, tree, handlers, params, res_radius, res_coordinates):
             if sim_mat[i][j] > sys.float_info.epsilon:
                 r[i] += var_mat[i][j] / (sim_mat[i][j] * params["scaling_radius"]) * np.linalg.norm(res_coordinates[node_in_tree[i]] - res_coordinates[node_in_tree[j]])
                 cnt[i] += 1.0
-    
+
     for i in xrange(len(r)):
         if cnt[i] > sys.float_info.epsilon:
             r[i] = r[i] / cnt[i]

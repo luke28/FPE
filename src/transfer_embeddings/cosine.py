@@ -7,6 +7,7 @@ class TransferEmbedding(object):
         self.optimizer = params["optimizer"] if "optimizer" in params else "GradientDescentOptimizer"
         self.embedding_size = params["embedding_size"]
         self.num_nodes = params["num_nodes"]
+        self.clip_min = params["clip_min"]
 
         self.tensor_graph = tf.Graph()
         with self.tensor_graph.as_default():
@@ -16,7 +17,7 @@ class TransferEmbedding(object):
 
             # shape(a) = [n, 1]
             self.a = tf.norm(self.Z, axis = 1, keep_dims = True)
-            self.dist = 2 - 2 * tf.matmul(self.Z, tf.transpose(self.Z)) / (self.a * tf.transpose(self.a))
+            self.dist = 2 - 2 * tf.matmul(self.Z, tf.transpose(self.Z)) / tf.clip_by_value(self.a * tf.transpose(self.a), self.clip_min, float('inf'))
             self.D_norm = tf.realdiv(self.D, tf.norm(self.D))
             self.loss = tf.norm(self.D_norm - tf.realdiv(self.dist, tf.norm(self.dist)))
 
@@ -58,7 +59,7 @@ class TransferEmbedding(object):
 
 
 def main():
-    params = {'learn_rate': 0.001, 'embedding_size': 2, 'num_nodes': 3}
+    params = {'learn_rate': 0.001, 'embedding_size': 2, 'num_nodes': 3, 'clip_min' : 1e-5}
     cli = TransferEmbedding(params)
     X = np.array([[0,0], [3, 0], [0, 4]], dtype = np.float32)
     xc = [1, 1]

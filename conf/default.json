@@ -24,9 +24,10 @@
     },
     "transfer_embeddings":{
         "func": "cosine",
-        "iteration": 3001,
-        "optimizer": "GradientDescentOptimizer",
+        "iteration": 10001,
+        "optimizer": "AdamOptimizer",
         "embedding_size": 2,
-        "learn_rate": 0.001
+        "learn_rate": 0.001,
+        "clip_min": 0.0000001
     }
 }

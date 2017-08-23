@@ -36,6 +36,13 @@ class DataHandler(object):
         return mat_ret
 
     @staticmethod
+    def cal_euclidean(x):
+        X = np.array(x)
+        a = np.square(np.linalg.norm(X, axis = 1, keepdims = True))
+        D = -2 * np.dot(X, np.transpose(X)) + a + np.transpose(a)
+        return D
+
+    @staticmethod
     def load_json_file(file_path):
         with open(file_path, "r") as f:
             s = f.read()

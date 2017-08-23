@@ -14,15 +14,15 @@ from data_handler import DataHandler as dh
 class Metric(object):
     @staticmethod
     def cal_metric(TP, FP, TN, FN):
-	res = {}
-	res["acc"] = float(TP + TN) / float(TP + FP + FN + TN)
-	res["precision"] = float(TP) / float(TP + FP) if TP + FP > 0 else 1.0
-	res["recall"] = float(TP) / float(TP + FN) if TP + FN > 0 else 1.0
+        res = {}
+        res["acc"] = float(TP + TN) / float(TP + FP + FN + TN)
+        res["precision"] = float(TP) / float(TP + FP) if TP + FP > 0 else 1.0
+        res["recall"] = float(TP) / float(TP + FN) if TP + FN > 0 else 1.0
         try:
-	    res["F1"] = 1.0 / (1.0 / res["recall"] + 1.0 / res["precision"])
+            res["F1"] = 1.0 / (1.0 / res["recall"] + 1.0 / res["precision"])
         except ZeroDivisionError:
             res["F1"] = 0.0
-	return res
+        return res
 
     @staticmethod
     def knn(G_truth, params):
@@ -76,7 +76,7 @@ class Metric(object):
 
     @staticmethod
     def draw_pr(precision, recall, file_name = "pr.png"):
-	index = np.array(range(len(precision)))
+        index = np.array(range(len(precision)))
         width = 0.3
         tmplist1 = [(x, precision[x]) for x in precision]
         tmplist2 = [(x, recall[x]) for x in recall]
