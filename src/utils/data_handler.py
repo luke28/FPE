@@ -36,7 +36,7 @@ class DataHandler(object):
         return mat_ret
 
     @staticmethod
-    def cal_euclidean(x):
+    def cal_euclidean_distance(x):
         X = np.array(x)
         a = np.square(np.linalg.norm(X, axis = 1, keepdims = True))
         D = -2 * np.dot(X, np.transpose(X)) + a + np.transpose(a)

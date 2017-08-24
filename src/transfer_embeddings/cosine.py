@@ -9,6 +9,9 @@ class TransferEmbedding(object):
         self.num_nodes = params["num_nodes"]
         self.clip_min = params["clip_min"]
 
+        def clip_by_min(x, m = 0.0):
+            return tf.clip_by_value(x, m, float('inf'))
+
         self.tensor_graph = tf.Graph()
         with self.tensor_graph.as_default():
             self.D = tf.placeholder(tf.float32, shape = [self.num_nodes, self.num_nodes])
@@ -16,10 +19,10 @@ class TransferEmbedding(object):
             self.Z = tf.Variable(tf.random_uniform([self.num_nodes, self.embedding_size], -1.0, 1.0), name = "Z", dtype = tf.float32)
 
             # shape(a) = [n, 1]
-            self.a = tf.norm(self.Z, axis = 1, keep_dims = True)
-            self.dist = 2 - 2 * tf.matmul(self.Z, tf.transpose(self.Z)) / tf.clip_by_value(self.a * tf.transpose(self.a), self.clip_min, float('inf'))
+            self.a = tf.norm(clip_by_min(self.Z), axis = 1, keep_dims = True)
+            self.dist = 2 - 2 * tf.matmul(self.Z, tf.transpose(self.Z)) / clip_by_min(self.a * tf.transpose(self.a), self.clip_min)
             self.D_norm = tf.realdiv(self.D, tf.norm(self.D))
-            self.loss = tf.norm(self.D_norm - tf.realdiv(self.dist, tf.norm(self.dist)))
+            self.loss = tf.norm(clip_by_min(self.D_norm - tf.realdiv(self.dist, clip_by_min(tf.norm(self.dist), self.clip_min))))
 
             self.train_step = getattr(tf.train, self.optimizer)(self.learn_rate).minimize(self.loss)
 

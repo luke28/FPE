@@ -15,19 +15,12 @@ from get_network_hierarchy.get_network import GetNetwork as gn
 from utils.batch_strategy import BatchStrategy
 from utils.env import *
 from utils.data_handler import DataHandler as dh
-from calculate_euclidean_fractal.cal.fractal import CalFractal as cf
+from calculate_euclidean_fractal.cal_fractal import CalFractal as cf
 #from utils.metric import Metric
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 
 def dfs(u, tree, handlers, params, res_radius, res_coordinates):
-    if len(res_coordinates) == 0:
-        res_coordinates = [None] * len(tree)
-        res_coordinates[u] = np.zeros(params["embedding_model"]["embedding_size"], dtype = np.float32)
-
-        res_radius = [None] * len(tree)
-        res_radius[u] = float(params["init_radius"])
-
     if len(tree[u].childst) == 0:
         return
     node_in_tree, sim_mat, var_mat = handlers["get_network"].get_network(u, tree)
@@ -38,16 +31,20 @@ def dfs(u, tree, handlers, params, res_radius, res_coordinates):
     print var_mat
     raw_input()
 
-    if (len(node_in_tree) == 1):
+    if (len(node_in_tree) <= 2):
         rc = np.random.random(size = params["embedding_model"]["embedding_size"]) * 2 - 1
-        print rc
-        print res_radius[u]
-        print res_coordinates[u]
-        print np.linalg.norm(rc)
-        rc = rc / np.linalg.norm(rc) * res_radius[u] + res_coordinates[u]
+        rc_b = rc / np.linalg.norm(rc) * res_radius[u]
+        rc = rc_b + res_coordinates[u]
         print(rc)
         res_coordinates[node_in_tree[0]] = rc
+        if (len(node_in_tree) == 2):
+            rc_b = - rc_b + res_coordinates[u]
+            res_coordinates[node_in_tree[1]] = rc_b
+            print rc_b
         raw_input()
+    elif (len(node_in_tree) == 2):
+        rc1 = np.random.random(size = params["embedding_model"]["embedding_size"]) * 2 - 1
+        
     else:
         # neural embedding
         sim_mat_norm = dh.normalize_adj_matrix(sim_mat)
@@ -104,13 +101,19 @@ def train_model(params, is_save = True):
     handlers["embedding_model"] = __import__('node_embedding.' + params["embedding_model"]["func"], fromlist = ["node_embedding"]).NodeEmbedding
     handlers["transfer_embeddings"] = __import__('transfer_embeddings.' + params["transfer_embeddings"]["func"], fromlist = ["transfer_embeddings"]).TransferEmbedding
 
-    res_radius = []
-    res_coordinates = []
+    res_coordinates = [None] * len(tree)
+    res_coordinates[len(tree) - 1] = np.zeros(params["embedding_model"]["embedding_size"], dtype = np.float32)
+    res_radius = [None] * len(tree)
+    res_radius[len(tree) - 1] = float(params["init_radius"])
     dfs(len(tree) - 1, tree, handlers, params, res_radius, res_coordinates)
 
     print res_radius
     print res_coordinates
-    
+
+    origin_coordinates = res_coordinates[: params["num_nodes"]]
+    dim = getattr(cf, params["calculate_euclidean_fractal"]["func"])(origin_coordinates, params["transfer_embeddings"]["embedding_size"], params["calculate_euclidean_fractal"])
+    print("dims: ", dim)
+
 '''
     if is_save:
         d = {"embeddings": embeddings.tolist(), "coefficient": coefficient.tolist()}
