@@ -7,6 +7,8 @@ class TransferEmbedding(object):
         self.optimizer = params["optimizer"] if "optimizer" in params else "GradientDescentOptimizer"
         self.embedding_size = params["embedding_size"]
         self.num_nodes = params["num_nodes"]
+        self.lbd = params["lambda"]
+        self.theta = params["theta"]
         self.clip_min = params["clip_min"]
 
         def clip_by_min(x, m = 0.0):
@@ -22,7 +24,7 @@ class TransferEmbedding(object):
             self.a = tf.norm(self.Z, axis = 1, keep_dims = True)
             self.dist = 2 - 2 * tf.matmul(self.Z, tf.transpose(self.Z)) / clip_by_min(self.a * tf.transpose(self.a), self.clip_min)
             self.D_norm = tf.realdiv(self.D, tf.norm(self.D))
-            self.loss = tf.norm(clip_by_min(self.D_norm - tf.realdiv(self.dist, clip_by_min(tf.norm(self.dist), self.clip_min))))
+            self.loss = tf.norm(clip_by_min(self.D_norm - tf.realdiv(self.dist, clip_by_min(tf.norm(self.dist), self.clip_min)))) + self.lbd * tf.exp(-self.theta * tf.norm(tf.realdiv(self.dist, clip_by_min(tf.norm(self.dist), self.clip_min))))
 
             self.train_step = getattr(tf.train, self.optimizer)(self.learn_rate).minimize(self.loss)
 
@@ -55,7 +57,6 @@ class TransferEmbedding(object):
         a = np.square(np.linalg.norm(X, axis = 1, keepdims = True))
         D = -2 * np.dot(X, np.transpose(X)) + a + np.transpose(a)
         Z, dic = self.train(D, epoch_num, save_path)
-        print D
         print Z
         print dic
         Z = Z * r + xc
@@ -63,7 +64,7 @@ class TransferEmbedding(object):
 
 
 def main():
-    params = {'learn_rate': 0.001, 'embedding_size': 2, 'num_nodes': 3, 'clip_min' : 1e-7, 'optimizer' : 'AdamOptimizer'}
+    params = {'learn_rate': 0.001, 'embedding_size': 2, 'num_nodes': 3, 'clip_min' : 1e-7, 'theta' : 3, 'lambda' : 0.2, 'optimizer': 'AdamOptimizer'}
     cli = TransferEmbedding(params)
     X = np.array([[0,0], [3, 0], [0, 4]], dtype = np.float32)
     xc = [1, 1]

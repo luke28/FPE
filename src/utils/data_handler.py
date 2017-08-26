@@ -14,7 +14,7 @@ class DataHandler(object):
         with open(file_path, "r") as f:
             for line in f:
                 line = line.strip()
-                if len(line) == 0:
+                if len(line) < 2:
                     continue
                 items = line.split()
                 G.add_edge(int(items[0]), int(items[1]))
