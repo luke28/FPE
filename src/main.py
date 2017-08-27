@@ -88,14 +88,7 @@ def dfs(u, tree, handlers, params, logger, res_radius, res_coordinates):
 
 
 def train_model(params, logger):
-
-    g = dh.load_graph(os.path.join(DATA_PATH, params["network_file"]))
-    g_mat = dh.transfer_to_matrix(g)
-    eh = __import__('extract_hierarchy.' + params["extract_hierarchy_model"]["func"], fromlist = ["extract_hierarchy"])
-    tree = eh.extract_hierarchy(g_mat, params["extract_hierarchy_model"]["threshold"])
-
-    logger.info("constuct a tree: \n")
-    logger.info("\n" + log.serialize_tree_level(tree))
+    g_mat, tree = extract_tree(params, logger)
 
     handlers = {}
     handlers["get_network"] = gn(g_mat, params["get_network_hierarchy"])
@@ -123,6 +116,17 @@ def train_model(params, logger):
     dh.append_to_file(res_path, "final result of coordinates: \n" + str(res_coordinates) + "\n")
     dh.append_to_file(res_path, "dims: \n" + str(dim) + "\n")
 
+def extract_tree(params, logger):
+    g = dh.load_graph(os.path.join(DATA_PATH, params["network_file"]))
+    g_mat = dh.transfer_to_matrix(g)
+    eh = __import__('extract_hierarchy.' + params["extract_hierarchy_model"]["func"], fromlist = ["extract_hierarchy"])
+    tree = eh.extract_hierarchy(g_mat, params["extract_hierarchy_model"]["threshold"], logger)
+
+    logger.info("constuct a tree: \n")
+    logger.info("\n" + log.serialize_tree_level(tree))
+    return g_mat, tree
+
+
 def metric(params):
     G_truth = dh.load_ground_truth(os.path.join(DATA_PATH, params["ground_truth_file"]))
     ret = []
@@ -132,18 +136,25 @@ def metric(params):
 
 
 def main():
-    log_path = os.path.join(LOG_PATH, str(int(time.time() * 1000.0)) + ".log")
-    logger = log.get_logger(log_path)
 
     parser = argparse.ArgumentParser(
                 formatter_class = argparse.RawTextHelpFormatter)
-    parser.add_argument('--operation', type = str, default = "all", help = "[all | train | metric | draw]")
+    parser.add_argument('--log_print', type = str, default = "no")
+    parser.add_argument('--operation', type = str, default = "all", help = "[all | extract_tree | train | metric | draw]")
     parser.add_argument('--conf', type = str, default = "default")
     args = parser.parse_args()
     params = dh.load_json_file(os.path.join(CONF_PATH, args.conf + ".json"))
 
+    if args.log_print == "yes":
+        logger = log.get_logger()
+    else:
+        log_path = os.path.join(LOG_PATH, str(int(time.time() * 1000.0)) + ".log")
+        logger = log.get_logger(log_path)
+
     if args.operation == "all":
         train_model(params, logger)
+    elif args.operation == "extract_tree":
+        extract_tree(params, logger)
     elif args.operation == "train":
         train_model(params)
     elif args.operation == "metric":
@@ -153,7 +164,8 @@ def main():
     else:
         print "Not Support!"
         logger.info("operation is not supported")
-    dh.symlink(log_path, os.path.join(LOG_PATH, "new_log"))
+    if args.log_print == "no":
+        dh.symlink(log_path, os.path.join(LOG_PATH, "new_log"))
 
 if __name__ == "__main__":
     main()

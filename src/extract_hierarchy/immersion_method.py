@@ -123,9 +123,10 @@ def ExtractHStruc(n, lst_edge, thres):
 
 # input: adj_matrix(numpy), thres
 # output: nodes of tree
-def extract_hierarchy(adj_matrix, thres):
+def extract_hierarchy(adj_matrix, thres, logger):
     # calculate the similarity matrix of adj_matrix
     sim_matrix = CalSimMatrix(adj_matrix)
+    logger.info("sim_matrix: \n" + str(sim_matrix))
 
     # statistic and sort edges
     lst_edge = GetEdges(sim_matrix)
