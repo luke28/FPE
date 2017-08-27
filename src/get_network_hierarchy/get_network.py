@@ -73,12 +73,12 @@ class GetNetwork(object):
                     #print "i2j:"
                     #print i2j
                     sim_mat[i][j] = sim_mat[j][i] = np.mean(i2j)
-                    var_mat[i][j] = np.std(i2j)/math.sqrt(len_i)
+                    var_mat[i][j] = np.std(i2j) #/math.sqrt(len_i)
                     j2i_tmp = np.sum(mat, axis=0)
                     j2i = [j2i_tmp[t]/len_i for t in coverst_j]
                     #print "j2i:"
                     #print j2i
-                    var_mat[j][i] = np.std(j2i)/math.sqrt(len_j)
+                    var_mat[j][i] = np.std(j2i) #/math.sqrt(len_j)
 
         return node_in_tree, sim_mat, var_mat
 
