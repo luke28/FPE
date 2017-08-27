@@ -43,6 +43,15 @@ class DataHandler(object):
         return D
 
     @staticmethod
+    def symlink(src, dst):
+        try:
+            os.symlink(src, dst)
+        except OSError:
+            os.remove(dst)
+            os.symlink(src, dst)
+
+
+    @staticmethod
     def load_json_file(file_path):
         with open(file_path, "r") as f:
             s = f.read()
@@ -52,7 +61,7 @@ class DataHandler(object):
     @staticmethod
     def append_to_file(file_path, s):
         with open(file_path, "a") as f:
-            a.write(s)
+            f.write(s)
 
 
     @staticmethod

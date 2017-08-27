@@ -15,36 +15,34 @@ from get_network_hierarchy.get_network import GetNetwork as gn
 from utils.batch_strategy import BatchStrategy
 from utils.env import *
 from utils.data_handler import DataHandler as dh
+from utils import log
 from calculate_euclidean_fractal.cal_fractal import CalFractal as cf
 #from utils.metric import Metric
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 
-def dfs(u, tree, handlers, params, res_radius, res_coordinates):
+def dfs(u, tree, handlers, params, logger, res_radius, res_coordinates):
     if len(tree[u].childst) == 0:
         return
     node_in_tree, sim_mat, var_mat = handlers["get_network"].get_network(u, tree)
 
-    print u
-    print node_in_tree
-    print sim_mat
-    print var_mat
-    raw_input()
+    logger.info("node id: " + str(u))
+    logger.info("node_in_tree\n" + str(node_in_tree))
+    logger.info("sim matrix: \n" + str(sim_mat))
+    logger.info("var matrix: \n" + str(var_mat))
 
     if (len(node_in_tree) <= 2):
+        logger.info("size of child set is less than 2")
         rc = np.random.random(size = params["embedding_model"]["embedding_size"]) * 2 - 1
         rc_b = rc / np.linalg.norm(rc) * res_radius[u]
         rc = rc_b + res_coordinates[u]
-        print(rc)
         res_coordinates[node_in_tree[0]] = rc
         if (len(node_in_tree) == 2):
             rc_b = - rc_b + res_coordinates[u]
             res_coordinates[node_in_tree[1]] = rc_b
-            print rc_b
-        raw_input()
-    elif (len(node_in_tree) == 2):
-        rc1 = np.random.random(size = params["embedding_model"]["embedding_size"]) * 2 - 1
-        
+        logger.info("coordinates of nodes: ")
+        for i in node_in_tree:
+            logger.info("\n" + str(res_coordinates[i]))
     else:
         # neural embedding
         sim_mat_norm = dh.normalize_adj_matrix(sim_mat)
@@ -52,18 +50,20 @@ def dfs(u, tree, handlers, params, res_radius, res_coordinates):
         params["embedding_model"]["num_nodes"] = len(sim_mat_norm)
         ne = handlers["embedding_model"](params["embedding_model"])
         X = ne.train(getattr(bs, params["embedding_model"]["batch_func"]), params["embedding_model"]["iteration"])
-        print(X)
-        print(dh.cal_euclidean_distance(X))
-        raw_input()
+        logger.info("neural embedding:")
+        logger.info("embedding res: \n" + str(X))
+        logger.info("distance: \n" + str(dh.cal_euclidean_distance(X)))
 
         # transfer embedding
         params["transfer_embeddings"]["num_nodes"] = len(sim_mat_norm)
 
         te = handlers["transfer_embeddings"](params["transfer_embeddings"])
-        Z = te.transfer(X, res_coordinates[u], res_radius[u], params["transfer_embeddings"]["iteration"])
+        Z, dic = te.transfer(X, res_coordinates[u], res_radius[u], params["transfer_embeddings"]["iteration"])
         for i in xrange(len(node_in_tree)):
             res_coordinates[node_in_tree[i]] = Z[i]
-        raw_input()
+        logger.info("transfer embedding:")
+        logger.info("embedding res: \n" + str(Z))
+        logger.info("distance: \n" + str(dic))
 
     # cal radius
     r = np.zeros(len(node_in_tree), dtype = np.float32)
@@ -79,23 +79,24 @@ def dfs(u, tree, handlers, params, res_radius, res_coordinates):
             r[i] = r[i] / cnt[i]
         res_radius[node_in_tree[i]] = min(params["radius_max"] * res_radius[u], max(params["radius_min"] * res_radius[u], r[i]))
 
-    print res_radius
-    print res_coordinates
-    raw_input()
+    logger.info("Finish cal radius")
+    logger.info("radius set:\n" + str(res_radius))
+    logger.info("res_coordinates:\n" + str(res_coordinates))
 
     for v in tree[u].childst:
-        dfs(v, tree, handlers, params, res_radius, res_coordinates)
+        dfs(v, tree, handlers, params, logger, res_radius, res_coordinates)
 
 
-def train_model(params, is_save = True):
+def train_model(params, logger):
+
     g = dh.load_graph(os.path.join(DATA_PATH, params["network_file"]))
     g_mat = dh.transfer_to_matrix(g)
-    #print g_mat
     eh = __import__('extract_hierarchy.' + params["extract_hierarchy_model"]["func"], fromlist = ["extract_hierarchy"])
     tree = eh.extract_hierarchy(g_mat, params["extract_hierarchy_model"]["threshold"])
 
-    print [str(i) for i in tree]
-    raw_input()
+    logger.info("constuct a tree: \n")
+    logger.info("\n" + log.serialize_tree_level(tree))
+
     handlers = {}
     handlers["get_network"] = gn(g_mat, params["get_network_hierarchy"])
     handlers["embedding_model"] = __import__('node_embedding.' + params["embedding_model"]["func"], fromlist = ["node_embedding"]).NodeEmbedding
@@ -105,27 +106,22 @@ def train_model(params, is_save = True):
     res_coordinates[len(tree) - 1] = np.zeros(params["embedding_model"]["embedding_size"], dtype = np.float32)
     res_radius = [None] * len(tree)
     res_radius[len(tree) - 1] = float(params["init_radius"])
-    dfs(len(tree) - 1, tree, handlers, params, res_radius, res_coordinates)
+    dfs(len(tree) - 1, tree, handlers, params, logger, res_radius, res_coordinates)
 
-    print res_radius
-    print res_coordinates
+    logger.info("final result of radius: \n" + str(res_radius))
+    logger.info("final result of coordinates: \n" + str(res_coordinates))
 
     origin_coordinates = res_coordinates[: params["num_nodes"]]
     dim = getattr(cf, params["calculate_euclidean_fractal"]["func"])(origin_coordinates, params["transfer_embeddings"]["embedding_size"], params["calculate_euclidean_fractal"])
-    print("dims: ", dim)
 
-'''
-    if is_save:
-        d = {"embeddings": embeddings.tolist(), "coefficient": coefficient.tolist()}
-        file_path = os.path.join(RES_PATH, "training_res_" + str(int(time.time() * 1000.0)))
-        with open(file_path, "w") as f:
-            f.write(json.dumps(d))
-        try:
-            os.symlink(file_path, os.path.join(RES_PATH, "TrainRes"))
-        except OSError:
-            os.remove(os.path.join(RES_PATH, "TrainRes"))
-            os.symlink(file_path, os.path.join(RES_PATH, "TrainRes"))
-'''
+    logger.info("dims: " + str(dim))
+
+    res_path = os.path.join(RES_PATH, "train_res_" + str(int(time.time() * 1000.0)))
+    dh.symlink(res_path, os.path.join(RES_PATH, "new_train_res"))
+    dh.append_to_file(res_path, "final result of radius: \n" + str(res_radius) + "\n")
+    dh.append_to_file(res_path, "final result of coordinates: \n" + str(res_coordinates) + "\n")
+    dh.append_to_file(res_path, "dims: \n" + str(dim) + "\n")
+
 def metric(params):
     G_truth = dh.load_ground_truth(os.path.join(DATA_PATH, params["ground_truth_file"]))
     ret = []
@@ -135,6 +131,9 @@ def metric(params):
 
 
 def main():
+    log_path = os.path.join(LOG_PATH, str(int(time.time() * 1000.0)) + ".log")
+    logger = log.get_logger(log_path)
+
     parser = argparse.ArgumentParser(
                 formatter_class = argparse.RawTextHelpFormatter)
     parser.add_argument('--operation', type = str, default = "all", help = "[all | train | metric | draw]")
@@ -143,7 +142,7 @@ def main():
     params = dh.load_json_file(os.path.join(CONF_PATH, args.conf + ".json"))
 
     if args.operation == "all":
-        train_model(params)
+        train_model(params, logger)
     elif args.operation == "train":
         train_model(params)
     elif args.operation == "metric":
@@ -152,6 +151,8 @@ def main():
         pass
     else:
         print "Not Support!"
+        logger.info("operation is not supported")
+    dh.symlink(log_path, os.path.join(LOG_PATH, "new_log"))
 
 if __name__ == "__main__":
     main()

@@ -51,16 +51,13 @@ class TransferEmbedding(object):
             return z / np.linalg.norm(z, axis = 1, keepdims = True), sess.run(self.dist)
 
     def transfer(self, X, xc, r, epoch_num = 10001, save_path= None):
-        print "transfer_embeddings:"
         X = np.array(X)
         xc = np.array(xc)
         a = np.square(np.linalg.norm(X, axis = 1, keepdims = True))
         D = -2 * np.dot(X, np.transpose(X)) + a + np.transpose(a)
         Z, dic = self.train(D, epoch_num, save_path)
-        print Z
-        print dic
         Z = Z * r + xc
-        return Z
+        return Z, dic
 
 
 def main():
