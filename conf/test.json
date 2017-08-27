@@ -2,9 +2,9 @@
     "network_file": "karate_SS.dat",
     "num_nodes": 34,
     "init_radius": 10,
-    "scaling_radius": 3.0,
-    "radius_min": 0.05,
-    "radius_max": 0.25,
+    "scaling_radius": 10.0,
+    "radius_min": 0.1,
+    "radius_max": 1.0,
     "embedding_model":{
         "func": "weighted_embedding",
         "iteration": 5001,
@@ -36,4 +36,5 @@
         "func": "rn_fractal",
         "nsample": 3000
     }
+
 }
