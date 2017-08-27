@@ -7,6 +7,8 @@ import numpy as np
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 from operator import itemgetter
+from matplotlib import colors
+from matplotlib.patches import Ellipse, Circle
 
 from env import *
 from data_handler import DataHandler as dh
@@ -94,3 +96,24 @@ class Metric(object):
 
         plt.savefig(file_name)
         plt.close()
+
+    @staticmethod
+    def draw_circle_2D(c, r, file_path=None, cValue=None, params=None):
+        c_map = ['b','g','r','c','m','y']
+        n = len(x) # nx2
+        if cValue is None:
+            c_id = np.random.randint(0,6,size=n)
+            cValue=[c_map[id] for id in c_id]
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+#draw circle
+        for i in xrange(n):
+            ax.add_patch(Circle(xy=(x[i][0],x[i][1]), radius=r[i], fill=False, ec = cValue[i], alpha=1))
+        # draw scatter
+        ax.scatter(x[:, 0], x[:, 1], c = cValue, marker='x')
+        plt.axis('scaled')
+        if not file_path is None:
+            pp = PdfPages(file_path)
+            pp.savefig(fig)
+            pp.close()
+
