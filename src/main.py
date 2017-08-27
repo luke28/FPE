@@ -17,7 +17,7 @@ from utils.env import *
 from utils.data_handler import DataHandler as dh
 from utils import log
 from calculate_euclidean_fractal.cal_fractal import CalFractal as cf
-#from utils.metric import Metric
+from utils.metric import Metric
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -115,6 +115,8 @@ def train_model(params, logger):
     dh.append_to_file(res_path, "final result of radius: \n" + str(res_radius) + "\n")
     dh.append_to_file(res_path, "final result of coordinates: \n" + str(res_coordinates) + "\n")
     dh.append_to_file(res_path, "dims: \n" + str(dim) + "\n")
+
+    Metric.draw_circle_2D(res_coordinates, res_radius)
 
 def extract_tree(params, logger):
     g = dh.load_graph(os.path.join(DATA_PATH, params["network_file"]))

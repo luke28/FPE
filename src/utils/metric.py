@@ -98,7 +98,7 @@ class Metric(object):
         plt.close()
 
     @staticmethod
-    def draw_circle_2D(c, r, file_path=None, cValue=None, params=None):
+    def draw_circle_2D(x, r, file_path=None, cValue=None, params=None):
         c_map = ['b','g','r','c','m','y']
         n = len(x) # nx2
         if cValue is None:
