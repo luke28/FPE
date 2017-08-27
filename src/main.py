@@ -112,7 +112,8 @@ def train_model(params, logger):
     logger.info("final result of coordinates: \n" + str(res_coordinates))
 
     origin_coordinates = res_coordinates[: params["num_nodes"]]
-    dim = getattr(cf, params["calculate_euclidean_fractal"]["func"])(origin_coordinates, params["transfer_embeddings"]["embedding_size"], params["calculate_euclidean_fractal"])
+    dim = 0
+    #dim = getattr(cf, params["calculate_euclidean_fractal"]["func"])(origin_coordinates, params["transfer_embeddings"]["embedding_size"], params["calculate_euclidean_fractal"])
 
     logger.info("dims: " + str(dim))
 

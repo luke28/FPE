@@ -1,4 +1,5 @@
 *.pyc
 res/
+log/
 *.swp
 src/transfer_embeddings/transfer_embedding.py
