@@ -1,0 +1,44 @@
+{
+    "network_file": "karate_SS.dat",
+    "num_nodes": 34,
+    "init_radius": 10,
+    "scaling_radius": 10.0,
+    "radius_min": 0.05,
+    "radius_max": 0.25,
+    "embedding_model":{
+        "func": "weighted_embedding",
+        "iteration": 5001,
+        "batch_func": "sequential_weighted",
+        "batch_size": 10,
+        "learn_rate": 0.001,
+        "embedding_size": 20,
+        "loss_func": "cross_entropy",
+        "optimizer": "AdamOptimizer"
+    },
+    "extract_hierarchy_model":{
+        "func": "immersion_method",
+        "threshold": 0.04
+    },
+    "get_network_hierarchy":{
+        "sim_method": "common_neighbor_sim"
+    },
+    "transfer_embeddings":{
+        "func": "cosine_distance",
+        "iteration": 10001,
+        "optimizer": "AdamOptimizer",
+        "embedding_size": 20,
+        "learn_rate": 0.001,
+        "clip_min": 0.0000001,
+        "lambda": 0.2,
+        "theta": 3
+    },
+    "metric_function":[
+        {
+            "metric_func": "classification",
+            "classification_func": "cart",
+            "ground_truth": "karate_comm.dat",
+            "test_ratio": 0.2
+        }
+    ]
+
+}
