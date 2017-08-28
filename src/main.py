@@ -16,7 +16,6 @@ from utils.batch_strategy import BatchStrategy
 from utils.env import *
 from utils.data_handler import DataHandler as dh
 from utils import log
-from calculate_euclidean_fractal.cal_fractal import CalFractal as cf
 from utils.metric import Metric
 
 FILE_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -104,19 +103,11 @@ def train_model(params, logger):
     logger.info("final result of radius: \n" + str(res_radius))
     logger.info("final result of coordinates: \n" + str(res_coordinates))
 
-    origin_coordinates = res_coordinates[: params["num_nodes"]]
-    dim = 0
-    #dim = getattr(cf, params["calculate_euclidean_fractal"]["func"])(origin_coordinates, params["transfer_embeddings"]["embedding_size"], params["calculate_euclidean_fractal"])
-
-    logger.info("dims: " + str(dim))
-
     res_path = os.path.join(RES_PATH, "train_res_" + str(int(time.time() * 1000.0)))
     dh.symlink(res_path, os.path.join(RES_PATH, "new_train_res"))
-    dh.append_to_file(res_path, "final result of radius: \n" + str(res_radius) + "\n")
-    dh.append_to_file(res_path, "final result of coordinates: \n" + str(res_coordinates) + "\n")
-    dh.append_to_file(res_path, "dims: \n" + str(dim) + "\n")
+    dh.append_to_file(res_path, json.dumps({"radius": np.array(res_radius).tolist(), "coordinates": np.array(res_coordinates).tolist()}))
 
-    Metric.draw_circle_2D(res_coordinates, res_radius)
+    return res_coordinates, res_radius
 
 def extract_tree(params, logger):
     g = dh.load_graph(os.path.join(DATA_PATH, params["network_file"]))
@@ -130,10 +121,25 @@ def extract_tree(params, logger):
 
 
 def metric(params):
-    G_truth = dh.load_ground_truth(os.path.join(DATA_PATH, params["ground_truth_file"]))
+    js = json.loads(open(os.path.join(RES_PATH, "new_train_res")).read())
+    coordinates = np.array(js["coordinates"])
+    radius = np.array(js["radius"])
+    res_path = os.path.join(RES_PATH, "metric_res_" + str(int(time.time() * 1000.0)))
+    dh.symlink(res_path, os.path.join(RES_PATH, "new_metric_res"))
     ret = []
     for metric in params["metric_function"]:
-        ret.append(getattr(Metric, metric["func"])(G_truth, metric))
+        if metric["metric_func"] == "cal_euclidean_fractal":
+            origin_coordinates = coordinates[: params["num_nodes"]]
+            d = params["embedding_model"]["embedding_size"]
+            dim = getattr(Metric, metric["metric_func"])(origin_coordinates, d, metric)
+            ret.append((metric["metric_func"], dim))
+        elif metric["metric_func"] == "draw_circle_2D":
+            pic_path = os.path.join(RES_PATH, "draw_circle_" + str(int(time.time() * 1000.0)) + ".pdf")
+            dh.symlink(pic_path, os.path.join(RES_PATH, "new_draw_circle"))
+            getattr(Metric, metric["metric_func"])(coordinates, radius, metric, params["num_nodes"], pic_path)
+    
+    dh.append_to_file(res_path, json.dumps(ret))
+
     return ret
 
 
@@ -155,6 +161,7 @@ def main():
 
     if args.operation == "all":
         train_model(params, logger)
+        metric(params)
     elif args.operation == "extract_tree":
         extract_tree(params, logger)
     elif args.operation == "train":

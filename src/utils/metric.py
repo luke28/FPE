@@ -28,56 +28,6 @@ class Metric(object):
         return res
 
     @staticmethod
-    def knn(G_truth, params):
-        embeddings = dh.load_json_file(os.path.join(RES_PATH, "TrainRes"))["embeddings"]
-        embeddings = np.array(embeddings)
-        TP = FP = TN = FN = 0
-        tmp = []
-        for i in xrange(len(embeddings)):
-            tmp.append([])
-            for j in xrange(len(embeddings)):
-                dist = np.linalg.norm(embeddings[i] - embeddings[j])
-                tmp[-1].append((dist, i, j))
-            tmp[-1].sort(key = itemgetter(0))
-        for item in tmp:
-            for it in item[:params["K"]]:
-                if it[1] in G_truth and it[2] in G_truth[it[1]]:
-                    TP += 1
-                else:
-                    FP += 1
-            for it in item[params["K"]:]:
-                if it[1] in G_truth and it[2] in G_truth[it[1]]:
-                    FN += 1
-                else:
-                    TN += 1
-
-        res = Metric.cal_metric(TP, FP, TN, FN)
-        print "knn metric:"
-        print res
-        return res
-
-    @staticmethod
-    def coefficient(G_truth, params):
-        coefficient = dh.load_json_file(os.path.join(RES_PATH, "TrainRes"))["coefficient"]
-        TP = FP = TN = FN = 0
-        for i in xrange(len(coefficient)):
-            for j in xrange(len(coefficient[i])):
-                if abs(coefficient[i][j]) > params["threshold"]:
-                    if i in G_truth and j in G_truth[i]:
-                        TP += 1
-                    else:
-                        FP += 1
-                else:
-                    if i in G_truth and j in G_truth[i]:
-                        FN += 1
-                    else:
-                        TN += 1
-        res = Metric.cal_metric(TP, FP, TN, FN)
-        print "coefficient metric:"
-        print res
-        return res
-
-    @staticmethod
     def draw_pr(precision, recall, file_name = "pr.png"):
         index = np.array(range(len(precision)))
         width = 0.3
@@ -99,23 +49,97 @@ class Metric(object):
         plt.close()
 
     @staticmethod
-    def draw_circle_2D(c, r, file_path='circle.pdf', cValue=None, params=None):
-        c_map = ['b','g','r','c','m','y']
+    def draw_circle_2D(c, r, params, num_nodes = 0, file_path = 'circle.pdf'):
+        c_map = params["color_list"]
         x = np.array(c)
         n = len(x) # nx2
-        if cValue is None:
-            c_id = np.random.randint(0,6,size=n)
-            cValue=[c_map[id] for id in c_id]
+
+        c_id = np.random.randint(0, len(c_map) - 1, size = n)
+        cValue=[c_map[id] for id in c_id]
+
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
-#draw circle
-        for i in xrange(n):
+
+        #draw circle
+        for i in xrange(num_nodes, n):
             ax.add_patch(Circle(xy=(x[i][0],x[i][1]), radius=r[i], fill=False, ec = cValue[i], alpha=1))
         # draw scatter
         ax.scatter(x[:, 0], x[:, 1], c = cValue, marker='x')
         plt.axis('scaled')
-        if not file_path is None:
-            pp = PdfPages(file_path)
-            pp.savefig(fig)
-            pp.close()
 
+        pp = PdfPages(file_path)
+        pp.savefig(fig)
+        pp.close()
+
+    @staticmethod
+    def cal_euclidean_fractal(nodes, d, params):
+        xmin = np.amin(nodes, axis=0)
+        xmax = np.amax(nodes, axis=0)
+        count = np.size(nodes, 0)
+        L = max(xmax-xmin)
+
+        nsample = params["nsample"]
+        max_tries = params["max_tries"]
+
+        l_list=[]
+
+        N_list = []
+        l = L * 2.0
+        N = 1
+
+        def rn_box_cover(l):
+            N_array = np.zeros(nsample)
+            for i in xrange(nsample):
+                cover = dict()
+                x0 = xmin - np.random.uniform(0, l, size=d)
+                #print(x0)
+                for j in xrange(count):
+                    foo = (nodes[j] - x0) / l
+                    cover[tuple(foo.astype(int))]=1
+                    #cover[ np.floor((nodes[j]-x0))/l ] = 1
+                N_array[i] = len(cover)
+            # print(cover)
+            return min(N_array)
+
+        def _unique(l_l, N_l):
+            if len(N_l) <= 1:
+                return (l_l, N_l)
+
+            N_last = N_l[-1]
+
+            same_count = 0
+
+            for i in range(2, len(N_l)):
+                if(N_l[-i] == N_last):
+                    same_count += 1
+
+            return (l_l[:-same_count], N_l[:-same_count])
+
+
+        for k in range(max_tries):
+            N = rn_box_cover(l)
+            l_list.append(l)
+            N_list.append(N)
+            l = l / 2
+
+        (l_list, N_list) = _unique(l_list, N_list)
+        log_l = np.array([np.log2(item) for item in l_list])
+        log_N = np.array([np.log2(item) for item in N_list])
+
+        f = np.poly1d(np.polyfit(-log_l, log_N, 1))
+
+        plt.plot(-log_l, log_N)
+        #plt.savefig("save_path")
+        #print(f)
+        return f(0)
+
+def test_cal_euclidean_fractal():
+    nodes = np.array([[0,0,0], [0,0,1], [0,1,0], [0,1,1], [1,0,0], [1,0,1], [1,1,0], [1,1,1]])
+    params = {"nsample": 3000, "max_tries": 30}
+    print(Metric.cal_euclidean_fractal(nodes, 3, params))
+
+def main():
+    test_cal_euclidean_fractal()
+
+if __name__ == "__main__":
+    main()

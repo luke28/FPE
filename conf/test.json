@@ -35,6 +35,17 @@
     "calculate_euclidean_fractal":{
         "func": "rn_fractal",
         "nsample": 3000
-    }
+    },
+    "metric_function":[
+        {
+            "metric_func": "cal_euclidean_fractal",
+            "nsample": 3000,
+            "max_tries": 30
+        },
+        {
+            "metric_func": "draw_circle_2D",
+            "color_list":["b", "g", "r", "c", "m", "y"]
+        }
+    ]
 
 }
