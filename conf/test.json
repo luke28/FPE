@@ -3,7 +3,7 @@
     "num_nodes": 34,
     "init_radius": 10,
     "scaling_radius": 10.0,
-    "radius_min": 0.1,
+    "radius_min": 0.5,
     "radius_max": 1.0,
     "embedding_model":{
         "func": "weighted_embedding",

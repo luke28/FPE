@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from operator import itemgetter
 from matplotlib import colors
 from matplotlib.patches import Ellipse, Circle
+from matplotlib.backends.backend_pdf import PdfPages
 
 from env import *
 from data_handler import DataHandler as dh
@@ -98,8 +99,9 @@ class Metric(object):
         plt.close()
 
     @staticmethod
-    def draw_circle_2D(x, r, file_path=None, cValue=None, params=None):
+    def draw_circle_2D(c, r, file_path='circle.pdf', cValue=None, params=None):
         c_map = ['b','g','r','c','m','y']
+        x = np.array(c)
         n = len(x) # nx2
         if cValue is None:
             c_id = np.random.randint(0,6,size=n)
