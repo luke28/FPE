@@ -128,16 +128,14 @@ def metric(params):
     dh.symlink(res_path, os.path.join(RES_PATH, "new_metric_res"))
     ret = []
     for metric in params["metric_function"]:
-        if metric["metric_func"] == "cal_euclidean_fractal":
-            origin_coordinates = coordinates[: params["num_nodes"]]
-            d = params["embedding_model"]["embedding_size"]
-            dim = getattr(Metric, metric["metric_func"])(origin_coordinates, d, metric)
-            ret.append((metric["metric_func"], dim))
-        elif metric["metric_func"] == "draw_circle_2D":
-            pic_path = os.path.join(RES_PATH, "draw_circle_" + str(int(time.time() * 1000.0)) + ".pdf")
-            dh.symlink(pic_path, os.path.join(RES_PATH, "new_draw_circle"))
+        if metric["metric_func"] == "draw_circle_2D":
+            pic_path = os.path.join(PIC_PATH, "draw_circle_" + str(int(time.time() * 1000.0)) + ".pdf")
+            dh.symlink(pic_path, os.path.join(PIC_PATH, "new_draw_circle"))
             getattr(Metric, metric["metric_func"])(coordinates, radius, metric, params["num_nodes"], pic_path)
-    
+        else:
+            origin_coordinates = coordinates[: params["num_nodes"]]
+            res = getattr(Metric, metric["metric_func"])(origin_coordinates, metric)
+            ret.append((metric["metric_func"], res))
     dh.append_to_file(res_path, json.dumps(ret))
 
     return ret

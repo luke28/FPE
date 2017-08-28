@@ -1,6 +1,7 @@
 *.pyc
 res/
 log/
+pic/
 *.swp
 *.png
 *.pdf

@@ -37,7 +37,22 @@
             "metric_func": "classification",
             "classification_func": "cart",
             "ground_truth": "karate_comm.dat",
-            "test_ratio": 0.2
+            "test_size": 0.33,
+            "times": 10
+        },
+        {
+            "metric_func": "classification",
+            "classification_func": "logistic",
+            "ground_truth": "karate_comm.dat",
+            "test_size": 0.33,
+            "times": 10
+        },
+        {
+            "metric_func": "classification",
+            "classification_func": "svm",
+            "ground_truth": "karate_comm.dat",
+            "test_size": 0.33,
+            "times": 10
         }
     ]
 

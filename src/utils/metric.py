@@ -10,9 +10,12 @@ from operator import itemgetter
 from matplotlib import colors
 from matplotlib.patches import Ellipse, Circle
 from matplotlib.backends.backend_pdf import PdfPages
+from sklearn.cross_validation import train_test_split
+
 
 from env import *
 from data_handler import DataHandler as dh
+from lib_ml import MachineLearningLib as mll
 
 class Metric(object):
     @staticmethod
@@ -72,7 +75,8 @@ class Metric(object):
         pp.close()
 
     @staticmethod
-    def cal_euclidean_fractal(nodes, d, params):
+    def cal_euclidean_fractal(nodes, params):
+        d = nodes.shape[1]
         xmin = np.amin(nodes, axis=0)
         xmax = np.amax(nodes, axis=0)
         count = np.size(nodes, 0)
@@ -132,6 +136,17 @@ class Metric(object):
         #plt.savefig("save_path")
         #print(f)
         return f(0)
+
+    @staticmethod
+    def classification(X, params):
+        y = dh.load_ground_truth(os.path.join(DATA_PATH, params["ground_truth"]))
+        acc = 0.0
+        for _ in xrange(params["times"]):
+             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = params["test_size"])
+             clf = getattr(mll, params["classification_func"])(X_train, y_train)
+             acc += mll.infer(clf, X_test, y_test)[1]
+        acc /= float(params["times"])
+        return acc
 
 def test_cal_euclidean_fractal():
     nodes = np.array([[0,0,0], [0,0,1], [0,1,0], [0,1,1], [1,0,0], [1,0,1], [1,1,0], [1,1,1]])

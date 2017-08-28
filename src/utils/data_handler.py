@@ -6,7 +6,6 @@ import json
 import numpy as np
 import math
 
-
 class DataHandler(object):
     @staticmethod
     def load_graph(file_path):
@@ -14,9 +13,11 @@ class DataHandler(object):
         with open(file_path, "r") as f:
             for line in f:
                 line = line.strip()
-                if len(line) < 2:
+                if len(line) == 0:
                     continue
                 items = line.split()
+                if len(items) != 2:
+                    continue
                 G.add_edge(int(items[0]), int(items[1]))
         return G
 
@@ -63,28 +64,16 @@ class DataHandler(object):
         with open(file_path, "a") as f:
             f.write(s)
 
-
     @staticmethod
-    def cal_average_delta(data_set,
-                        num_of_nodes,
-                        K = 1.0,
-                        T = float('inf')):
-        n = num_of_nodes
-        res = np.zeros((n, n), dtype = float)
-        cnt = np.zeros(n, dtype = float)
-        for data in data_set:
-            for i in xrange(len(data)):
-                for j in xrange(i, len(data)):
-                    if data[i][1] - data[j][1] > T:
-                        break
-                    else:
-                        res[data[i][0]][data[j][0]] += math.exp(K * (data[i][1] - data[j][1]))
-                cnt[data[i][0]] += 1.0
-        for i in xrange(n):
-            for j in xrange(n):
-                if cnt[i] < 0.9:
-                    res[i][j] = 0.0
-                else:
-                    res[i][j] /= cnt[i]
-        return res
+    def load_ground_truth(file_path):
+        lst = []
+        with open(file_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if len(line) == 0:
+                    continue
+                items = line.split()
+                lst.append([int(i) for i in items])
+        lst.sort()
+        return [i[1] for i in lst]
 
