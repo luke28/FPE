@@ -4,6 +4,21 @@ import matplotlib.pyplot as plt
 
 class CalFractal(object):
     @staticmethod
+    def _unique(l_l, N_l):
+    if len(N_l)<=1:
+        return (l_l,N_l)
+
+    N_last = N_l[-1]
+
+    same_count = 0
+
+    for i in range(2, len(N_l)):
+        if(N_l[-i]==N_last):
+            same_count+=1
+
+    return ( l_l[:-same_count], N_l[:-same_count] )
+
+    @staticmethod
     def rn_box_cover(l, nsample, d, nodes):
         xmin = np.amin(nodes, axis=0)
         xmax = np.amax(nodes, axis=0)
@@ -35,12 +50,15 @@ class CalFractal(object):
         l = L * 2.0
         N = 1
 
-        while N < count:
+        #while N < count:
+        for k in range(30):
             N = CalFractal.rn_box_cover(l, nsample, d, nodes)
             l_list.append(l)
             N_list.append(N)
             l = l / 2
 
+
+        (l_list, N_list) = CalFractal._unique(l_list, N_list)
         log_l = np.array([np.log2(item) for item in l_list])
         log_N = np.array([np.log2(item) for item in N_list])
 
