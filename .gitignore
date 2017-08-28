@@ -2,4 +2,6 @@
 res/
 log/
 *.swp
+*.png
+*.pdf
 src/transfer_embeddings/transfer_embedding.py
