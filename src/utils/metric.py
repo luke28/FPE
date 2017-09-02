@@ -116,8 +116,10 @@ class Metric(object):
             for i in range(2, len(N_l)):
                 if(N_l[-i] == N_last):
                     same_count += 1
-
-            return (l_l[:-same_count], N_l[:-same_count])
+            if same_count>0:
+                return (l_l[:-same_count], N_l[:-same_count])
+            else:
+                return (l_l, N_l)
 
 
         for k in range(max_tries):
