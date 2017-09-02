@@ -9,6 +9,7 @@ import subprocess
 import numpy as np
 import networkx as nx
 import tensorflow as tf
+import datetime
 from operator import itemgetter
 
 from get_network_hierarchy.get_network import GetNetwork as gn
@@ -23,15 +24,21 @@ FILE_PATH = os.path.dirname(os.path.abspath(__file__))
 def dfs(u, tree, handlers, params, logger, res_radius, res_coordinates):
     if len(tree[u].childst) == 0:
         return
+    logger.info("node id: " + str(u))
+
+    starttime = datetime.datetime.now()
     node_in_tree, sim_mat, var_mat = handlers["get_network"].get_network(u, tree)
 
-    logger.info("node id: " + str(u))
-    logger.info("node_in_tree\n" + str(node_in_tree))
-    logger.info("sim matrix: \n" + str(sim_mat))
-    logger.info("var matrix: \n" + str(var_mat))
+    endtime = datetime.datetime.now()
+    logger.info("get_network time: " + str((endtime - starttime).seconds))
+    logger.info("size of child set: " + str(len(node_in_tree)))
+
+    logger.debug("node_in_tree\n" + str(node_in_tree))
+    logger.debug("sim matrix: \n" + str(sim_mat))
+    logger.debug("var matrix: \n" + str(var_mat))
 
     if (len(node_in_tree) <= 2):
-        logger.info("size of child set is less than 2")
+        logger.debug("size of child set is less than 2")
         rc = np.random.random(size = params["embedding_model"]["embedding_size"]) * 2 - 1
         rc_b = rc / np.linalg.norm(rc) * res_radius[u]
         rc = rc_b + res_coordinates[u]
@@ -39,31 +46,40 @@ def dfs(u, tree, handlers, params, logger, res_radius, res_coordinates):
         if (len(node_in_tree) == 2):
             rc_b = - rc_b + res_coordinates[u]
             res_coordinates[node_in_tree[1]] = rc_b
-        logger.info("coordinates of nodes: ")
+        logger.debug("coordinates of nodes: ")
         for i in node_in_tree:
-            logger.info("\n" + str(res_coordinates[i]))
+            logger.debug("\n" + str(res_coordinates[i]))
     else:
         # neural embedding
+        starttime = datetime.datetime.now()
         sim_mat_norm = dh.normalize_adj_matrix(sim_mat)
         bs = BatchStrategy(sim_mat_norm)
         params["embedding_model"]["num_nodes"] = len(sim_mat_norm)
         ne = handlers["embedding_model"](params["embedding_model"])
         X = ne.train(getattr(bs, params["embedding_model"]["batch_func"]), params["embedding_model"]["iteration"])
-        logger.info("neural embedding:")
-        logger.info("embedding res: \n" + str(X))
-        logger.info("distance: \n" + str(dh.cal_euclidean_distance(X)))
+
+        endtime = datetime.datetime.now()
+        logger.info("neural embedding time: " + str((endtime - starttime).seconds))
+        logger.debug("neural embedding:")
+        logger.debug("embedding res: \n" + str(X))
+        logger.debug("distance: \n" + str(dh.cal_euclidean_distance(X)))
 
         # transfer embedding
+        starttime = datetime.datetime.now()
         params["transfer_embeddings"]["num_nodes"] = len(sim_mat_norm)
 
         te = handlers["transfer_embeddings"](params["transfer_embeddings"])
         Z, dic = te.transfer(X, res_coordinates[u], res_radius[u], params["transfer_embeddings"]["iteration"])
         for i in xrange(len(node_in_tree)):
             res_coordinates[node_in_tree[i]] = Z[i]
-        logger.info("transfer embedding:")
-        logger.info("embedding res: \n" + str(Z))
-        logger.info("distance: \n" + str(dic))
 
+        endtime = datetime.datetime.now()
+        logger.info("transfer time: " + str((endtime - starttime).seconds))
+        logger.debug("transfer embedding:")
+        logger.debug("embedding res: \n" + str(Z))
+        logger.debug("distance: \n" + str(dic))
+
+    starttime = datetime.datetime.now()
     # cal radius
     r = np.zeros(len(node_in_tree), dtype = np.float32)
     cnt = np.zeros(len(r), dtype = np.float32)
@@ -78,9 +94,12 @@ def dfs(u, tree, handlers, params, logger, res_radius, res_coordinates):
             r[i] = r[i] / cnt[i]
         res_radius[node_in_tree[i]] = min(params["radius_max"] * res_radius[u], max(params["radius_min"] * res_radius[u], r[i]))
 
-    logger.info("Finish cal radius")
-    logger.info("radius set:\n" + str(res_radius))
-    logger.info("res_coordinates:\n" + str(res_coordinates))
+    endtime = datetime.datetime.now()
+    logger.info("cal_radius time: " + str((endtime - starttime).seconds))
+
+    logger.debug("Finish cal radius")
+    logger.debug("radius set:\n" + str(res_radius))
+    logger.debug("res_coordinates:\n" + str(res_coordinates))
 
     for v in tree[u].childst:
         dfs(v, tree, handlers, params, logger, res_radius, res_coordinates)
@@ -100,8 +119,8 @@ def train_model(params, logger):
     res_radius[len(tree) - 1] = float(params["init_radius"])
     dfs(len(tree) - 1, tree, handlers, params, logger, res_radius, res_coordinates)
 
-    logger.info("final result of radius: \n" + str(res_radius))
-    logger.info("final result of coordinates: \n" + str(res_coordinates))
+    logger.debug("final result of radius: \n" + str(res_radius))
+    logger.debug("final result of coordinates: \n" + str(res_coordinates))
 
     res_path = os.path.join(RES_PATH, "train_res_" + str(int(time.time() * 1000.0)))
     dh.symlink(res_path, os.path.join(RES_PATH, "new_train_res"))
@@ -115,8 +134,8 @@ def extract_tree(params, logger):
     eh = __import__('extract_hierarchy.' + params["extract_hierarchy_model"]["func"], fromlist = ["extract_hierarchy"])
     tree = eh.extract_hierarchy(g_mat, params["extract_hierarchy_model"]["threshold"], logger)
 
-    logger.info("constuct a tree: \n")
-    logger.info("\n" + log.serialize_tree_level(tree))
+    logger.debug("constuct a tree: \n")
+    logger.debug("\n" + log.serialize_tree_level(tree))
     return g_mat, tree
 
 
@@ -170,7 +189,7 @@ def main():
         pass
     else:
         print "Not Support!"
-        logger.info("operation is not supported")
+        logger.debug("operation is not supported")
     if args.log_print == "no":
         dh.symlink(log_path, os.path.join(LOG_PATH, "new_log"))
 
