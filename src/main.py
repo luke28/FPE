@@ -63,6 +63,7 @@ def dfs(u, tree, handlers, params, logger, res_radius, res_coordinates):
         logger.debug("neural embedding:")
         logger.debug("embedding res: \n" + str(X))
         logger.debug("distance: \n" + str(dh.cal_euclidean_distance(X)))
+        del ne, bs
 
         # transfer embedding
         starttime = datetime.datetime.now()
@@ -78,6 +79,8 @@ def dfs(u, tree, handlers, params, logger, res_radius, res_coordinates):
         logger.debug("transfer embedding:")
         logger.debug("embedding res: \n" + str(Z))
         logger.debug("distance: \n" + str(dic))
+        
+        del te, dic, sim_mat_norm
 
     starttime = datetime.datetime.now()
     # cal radius
@@ -94,6 +97,8 @@ def dfs(u, tree, handlers, params, logger, res_radius, res_coordinates):
             r[i] = r[i] / cnt[i]
         res_radius[node_in_tree[i]] = min(params["radius_max"] * res_radius[u], max(params["radius_min"] * res_radius[u], r[i]))
 
+    del r, cnt, node_in_tree, sim_mat, var_mat
+
     endtime = datetime.datetime.now()
     logger.info("cal_radius time: " + str((endtime - starttime).seconds))
 
@@ -101,6 +106,7 @@ def dfs(u, tree, handlers, params, logger, res_radius, res_coordinates):
     logger.debug("radius set:\n" + str(res_radius))
     logger.debug("res_coordinates:\n" + str(res_coordinates))
 
+    del starttime, endtime
     for v in tree[u].childst:
         dfs(v, tree, handlers, params, logger, res_radius, res_coordinates)
 

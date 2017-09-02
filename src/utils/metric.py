@@ -10,7 +10,7 @@ from operator import itemgetter
 from matplotlib import colors
 from matplotlib.patches import Ellipse, Circle
 from matplotlib.backends.backend_pdf import PdfPages
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 
 
 from env import *
@@ -39,7 +39,7 @@ class Metric(object):
         tmplist1.sort()
         tmplist2.sort()
         X = [x[0] for x in tmplist1]
-        y1 = [x[1] for x in tmplist1]
+        y1 = [x[1] for x in Gtmplist1]
         y2 = [x[1] for x in tmplist2]
         plt.bar(index - width / 2, y2, width, color = "blue", label="recall")
         plt.bar(index + width / 2, y1, width, color = "red", label="precision")
@@ -144,7 +144,7 @@ class Metric(object):
         y = dh.load_ground_truth(os.path.join(DATA_PATH, params["ground_truth"]))
         acc = 0.0
         for _ in xrange(params["times"]):
-             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = params["test_size"])
+             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = params["test_size"], stratify = y)
              clf = getattr(mll, params["classification_func"])(X_train, y_train)
              acc += mll.infer(clf, X_test, y_test)[1]
         acc /= float(params["times"])
