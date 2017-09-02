@@ -8,7 +8,7 @@ import math
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(FILE_DIR, '..'))
 from utils.env import *
-#from get_network_hierarchy.get_network import *
+from get_network_hierarchy.get_network import *
 
 class Node:
     def __init__(self, id, childst, coverst):
@@ -150,8 +150,8 @@ def test():
     tree = ExtractHStruc(n, lst_edge, 0.08)
     fa_id = len(tree)-1
     #print [str(i) for i in tree]
-    #params = {'sim_method':'common_neighbor_sim'}
-    #GN = GetNetwork(t, params)
+    params = {'sim_method':'common_neighbor_sim'}
+    GN = GetNetwork(t, params)
     #node_in_tree, sim_mat, var_mat = GN.get_network(fa_id, tree)
     #print node_in_tree
     #print sim_mat
