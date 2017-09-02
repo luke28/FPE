@@ -60,22 +60,23 @@ class GetNetwork(object):
                     #print coverst_i
                     #print coverst_j
 
-                    mask_mat = np.zeros([n, n])
+                    mat = np.zeros([len_i, len_j])
+                    ci = 0
+                    cj = 0
                     for p in coverst_i:
+                        cj = 0
                         for q in coverst_j:
-                            mask_mat[p][q] = 1
-
-                    mat = mask_mat*self.sim_mat_n
+                            mat[ci][cj] = self.sim_mat_n[p][q]
+                            cj = cj+1
+                        ci = ci+1
                     # print "mat"
                     # print mat
-                    i2j_tmp = np.sum(mat, axis=1)
-                    i2j = [i2j_tmp[t]/len_j for t in coverst_i]
+                    i2j = np.mean(mat, axis=1)
                     #print "i2j:"
                     #print i2j
                     sim_mat[i][j] = sim_mat[j][i] = np.mean(i2j)
                     var_mat[i][j] = np.std(i2j) #/math.sqrt(len_i)
-                    j2i_tmp = np.sum(mat, axis=0)
-                    j2i = [j2i_tmp[t]/len_i for t in coverst_j]
+                    j2i = np.mean(mat, axis=0)
                     #print "j2i:"
                     #print j2i
                     var_mat[j][i] = np.std(j2i) #/math.sqrt(len_j)
