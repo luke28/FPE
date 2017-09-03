@@ -11,6 +11,7 @@ from matplotlib import colors
 from matplotlib.patches import Ellipse, Circle
 from matplotlib.backends.backend_pdf import PdfPages
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import scale
 
 
 from env import *
@@ -141,10 +142,11 @@ class Metric(object):
 
     @staticmethod
     def classification(X, params):
+        X_scaled = scale(X)
         y = dh.load_ground_truth(os.path.join(DATA_PATH, params["ground_truth"]))
         acc = 0.0
         for _ in xrange(params["times"]):
-             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = params["test_size"], stratify = y)
+             X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size = params["test_size"], stratify = y)
              clf = getattr(mll, params["classification_func"])(X_train, y_train)
              acc += mll.infer(clf, X_test, y_test)[1]
         acc /= float(params["times"])
