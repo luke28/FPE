@@ -9,18 +9,8 @@ FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(FILE_DIR, '..'))
 from utils.env import *
 from get_network_hierarchy.get_network import *
+from shared_types import Node
 
-class Node:
-    def __init__(self, id, childst, coverst):
-        self.id = id
-        self.childst = childst
-        self.coverst = coverst
-
-    def __str__(self):
-        line = "id: %s\n" % self.id
-        line += "childst: %s\n" % self.childst
-        line += "coverst: %s\n" % self.coverst
-        return line
 
 class UnionFind:
     def __init__(self, n):
@@ -123,7 +113,8 @@ def ExtractHStruc(n, lst_edge, thres):
 
 # input: adj_matrix(numpy), thres
 # output: nodes of tree
-def extract_hierarchy(adj_matrix, thres, logger):
+def extract_hierarchy(adj_matrix, logger, params):
+    thres = params["threshold"]
     # calculate the similarity matrix of adj_matrix
     sim_matrix = CalSimMatrix(adj_matrix)
     logger.info("sim_matrix: \n" + str(sim_matrix))

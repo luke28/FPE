@@ -138,10 +138,10 @@ def extract_tree(params, logger):
     g = dh.load_graph(os.path.join(DATA_PATH, params["network_file"]))
     g_mat = dh.transfer_to_matrix(g)
     eh = __import__('extract_hierarchy.' + params["extract_hierarchy_model"]["func"], fromlist = ["extract_hierarchy"])
-    tree = eh.extract_hierarchy(g_mat, params["extract_hierarchy_model"]["threshold"], logger)
+    tree = eh.extract_hierarchy(g_mat, logger, params["extract_hierarchy_model"], )
 
-    #logger.debug("constuct a tree: \n")
-    #logger.debug("\n" + log.serialize_tree_level(tree))
+    logger.info("constuct a tree: \n")
+    logger.info("\n" + log.serialize_tree_level(tree))
     return g_mat, tree
 
 
