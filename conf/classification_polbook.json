@@ -1,0 +1,58 @@
+{
+    "network_file": "polbooks_SS.dat",
+    "num_nodes": 105,
+    "init_radius": 100,
+    "scaling_radius": 10.0,
+    "radius_min": 0.05,
+    "radius_max": 0.25,
+    "embedding_model":{
+        "func": "weighted_embedding",
+        "iteration": 10001,
+        "batch_func": "sequential_weighted",
+        "batch_size": 10,
+        "learn_rate": 0.001,
+        "embedding_size": 30,
+        "loss_func": "cross_entropy",
+        "optimizer": "AdamOptimizer"
+    },
+    "extract_hierarchy_model":{
+        "func": "immersion_method",
+        "threshold": 0.04
+    },
+    "get_network_hierarchy":{
+        "sim_method": "common_neighbor_sim"
+    },
+    "transfer_embeddings":{
+        "func": "cosine_distance",
+        "iteration": 10001,
+        "optimizer": "AdamOptimizer",
+        "embedding_size": 30,
+        "learn_rate": 0.001,
+        "clip_min": 0.0000001,
+        "lambda": 0.2,
+        "theta": 3
+    },
+    "metric_function":[
+        {
+            "metric_func": "classification",
+            "classification_func": "cart",
+            "ground_truth": "polbooks_comm.dat",
+            "test_size": 0.33,
+            "times": 10
+        },
+        {
+            "metric_func": "classification",
+            "classification_func": "logistic",
+            "ground_truth": "polbooks_comm.dat",
+            "test_size": 0.33,
+            "times": 10
+        },
+        {
+            "metric_func": "classification",
+            "classification_func": "svm",
+            "ground_truth": "polbooks_comm.dat",
+            "test_size": 0.33,
+            "times": 10
+        }
+    ]
+}

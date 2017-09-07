@@ -6,3 +6,4 @@ pic/
 *.png
 *.pdf
 src/transfer_embeddings/transfer_embedding.py
+src/run3.sh

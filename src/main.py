@@ -188,7 +188,7 @@ def main():
     elif args.operation == "extract_tree":
         extract_tree(params, logger)
     elif args.operation == "train":
-        train_model(params)
+        train_model(params, logger)
     elif args.operation == "metric":
         metric(params)
     elif args.operation == "draw":
