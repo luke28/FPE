@@ -1,0 +1,12 @@
+{
+    "feature_file": "FPE_syn34_fea_32",
+    "tree_file": "tree_syn34",
+    "num_nodes": 64,
+    "clustering_model":{
+        "func": "kmeans"
+    },
+    "metric_methods": [
+        "Jaccard_Coefficient"
+    ]
+
+}

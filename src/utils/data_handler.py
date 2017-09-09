@@ -40,6 +40,18 @@ class DataHandler(object):
         return G, n, m
 
     @staticmethod
+    def load_fea(file_path):
+        X = []
+        with open(file_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                items = line.split()
+                if len(items) < 1:
+                    continue
+                X.append([float(item) for item in items])
+        return np.array(X)
+
+    @staticmethod
     def transfer_to_matrix(graph):
         n = graph.number_of_nodes()
         mat = np.zeros([n, n])

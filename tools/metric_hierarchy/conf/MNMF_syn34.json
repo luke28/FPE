@@ -1,0 +1,12 @@
+{
+    "feature_file": "MNMF_syn34_10",
+    "tree_file": "tree_syn34",
+    "num_nodes": 64,
+    "clustering_model":{
+        "func": "kmeans"
+    },
+    "metric_methods": [
+        "Jaccard_Coefficient"
+    ]
+
+}

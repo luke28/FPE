@@ -1,0 +1,12 @@
+{
+    "feature_file": "fpe_fea_syn1800_64",
+    "tree_file": "tree_1800",
+    "num_nodes": 1800,
+    "clustering_model":{
+        "func": "kmeans"
+    },
+    "metric_methods": [
+        "Jaccard_Coefficient"
+    ]
+
+}
