@@ -32,6 +32,11 @@ class GetNetwork(object):
 
         return sim_mat
 
+    @staticmethod
+    def adj_sim(adj_mat_):
+        sim_mat = np.array(adj_mat_)
+        return sim_mat
+
     def get_network(self, fa_id, tree):
         n = self.n 
         childst = list(tree[fa_id].childst)

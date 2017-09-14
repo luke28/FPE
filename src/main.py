@@ -53,7 +53,10 @@ def dfs(u, tree, handlers, params, logger, res_radius, res_coordinates):
         # neural embedding
         starttime = datetime.datetime.now()
         sim_mat_norm = dh.normalize_adj_matrix(sim_mat)
-        bs = BatchStrategy(sim_mat_norm)
+        if "batch_params" in params:
+            bs = BatchStrategy(sim_mat_norm, params["batch_params"])
+        else:
+            bs = BatchStrategy(sim_mat_norm, {})
         params["embedding_model"]["num_nodes"] = len(sim_mat_norm)
         ne = handlers["embedding_model"](params["embedding_model"])
         X = ne.train(getattr(bs, params["embedding_model"]["batch_func"]), params["embedding_model"]["iteration"])
@@ -128,7 +131,7 @@ def train_model(params, logger):
     #logger.debug("final result of radius: \n" + str(res_radius))
     #logger.debug("final result of coordinates: \n" + str(res_coordinates))
 
-    res_path = os.path.join(RES_PATH, "train_res_" + str(int(time.time() * 1000.0)))
+    res_path = params["train_output"]
     dh.symlink(res_path, os.path.join(RES_PATH, "new_train_res"))
     dh.append_to_file(res_path, json.dumps({"radius": np.array(res_radius).tolist(), "coordinates": np.array(res_coordinates).tolist()}))
 
@@ -146,10 +149,10 @@ def extract_tree(params, logger):
 
 
 def metric(params):
-    js = json.loads(open(os.path.join(RES_PATH, "new_train_res")).read())
+    js = json.loads(open(params["metric_input"]).read())
     coordinates = np.array(js["coordinates"])
     radius = np.array(js["radius"])
-    res_path = os.path.join(RES_PATH, "metric_res_" + str(int(time.time() * 1000.0)))
+    res_path = params["metric_output"]
     dh.symlink(res_path, os.path.join(RES_PATH, "new_metric_res"))
     ret = []
     for metric in params["metric_function"]:
@@ -173,8 +176,15 @@ def main():
     parser.add_argument('--log_print', type = str, default = "no")
     parser.add_argument('--operation', type = str, default = "all", help = "[all | extract_tree | train | metric | draw]")
     parser.add_argument('--conf', type = str, default = "default")
+    parser.add_argument('--metric_input', type = str, default = "new_train_res")
+    parser.add_argument('--train_output', type = str, default = str(int(time.time() * 1000.0)))
+    parser.add_argument('--metric_output', type = str, default = str(int(time.time() * 1000.0)))
+
     args = parser.parse_args()
     params = dh.load_json_file(os.path.join(CONF_PATH, args.conf + ".json"))
+    params["metric_input"] = os.path.join(RES_PATH, args.metric_input)
+    params["train_output"] = os.path.join(RES_PATH, "train_res_" + args.train_output)
+    params["metric_output"] = os.path.join(RES_PATH, "metric_res_" + args.metric_output)
 
     if args.log_print == "yes":
         logger = log.get_logger()

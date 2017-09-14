@@ -10,6 +10,7 @@ class TransferEmbedding(object):
         self.lbd = params["lambda"]
         self.theta = params["theta"]
         self.clip_min = params["clip_min"]
+        self.tol = params["tol"] if "tol" in params else 0.0001
 
         def clip_by_min(x, m = 0.0):
             return tf.clip_by_value(x, m, float('inf'))
@@ -32,10 +33,17 @@ class TransferEmbedding(object):
     def train(self, D, epoch_num = 10001, save_path = None):
         with tf.Session(graph = self.tensor_graph) as sess:
             sess.run(tf.global_variables_initializer())
+            pre = float('inf')
             for i in xrange(epoch_num):
                 self.train_step.run({self.D : D})
-                if (i % 1000 == 0):
-                    print(self.loss.eval({self.D : D}))
+                if i % 100 == 0:
+                    loss = self.loss.eval({self.D : D})
+                    if (i % 1000 == 0):
+                        print(loss)
+                    if abs(loss - pre) < self.tol:
+                        break
+                    else:
+                        pre = loss
             if save_path is not None:
                 saver = tf.train.Saver()
                 saver.save(sess, save_path)

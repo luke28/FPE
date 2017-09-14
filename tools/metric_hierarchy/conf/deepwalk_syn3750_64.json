@@ -1,0 +1,12 @@
+{
+    "feature_file": "deepwalk_syn3750_64",
+    "tree_file": "tree_3750",
+    "num_nodes": 3750,
+    "clustering_model":{
+        "func": "kmeans"
+    },
+    "metric_methods": [
+        "Jaccard_Coefficient"
+    ]
+
+}
