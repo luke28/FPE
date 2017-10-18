@@ -5,6 +5,7 @@ import re
 import json
 import numpy as np
 import math
+from queue import Queue
 
 class DataHandler(object):
     @staticmethod
@@ -59,6 +60,15 @@ class DataHandler(object):
             mat[e[0]][e[1]] = 1
             mat[e[1]][e[0]] = 1
         return mat
+
+    @staticmethod
+    def transfer_to_nx(g_mat):
+        G = nx.Graph()
+        for i in xrange(len(g_mat)):
+            for j in xrange(len(g_mat[i])):
+                if g_mat[i][j] == 1:
+                    G.add_edge(i, j)
+        return G
 
     @staticmethod
     def normalize_adj_matrix(g):

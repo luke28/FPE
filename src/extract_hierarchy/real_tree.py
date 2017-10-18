@@ -16,7 +16,7 @@ def dfs(u, tree):
         dfs(v, tree)
         tree[u].coverst = tree[u].coverst | tree[v].coverst
 
-def extract_hierarchy(g_mat, logger, params):
+def extract_hierarchy(G, logger, params):
     g, n, m = dh.load_tree(os.path.join(DATA_PATH, params["file_path"]))
     tree = [None] * n
     for u in g:

@@ -4,10 +4,12 @@ import sys
 import os
 import numpy as np
 import math
+import networkx as nx
 
 FILE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(FILE_DIR, '..'))
 from utils.env import *
+from utils.data_handler import DataHandler as dh
 from get_network_hierarchy.get_network import *
 from shared_types import Node
 
@@ -113,7 +115,8 @@ def ExtractHStruc(n, lst_edge, thres):
 
 # input: adj_matrix(numpy), thres
 # output: nodes of tree
-def extract_hierarchy(adj_matrix, logger, params):
+def extract_hierarchy(G, logger, params):
+    adj_matrix = dh.transfer_to_matrix(G)
     thres = params["threshold"]
     # calculate the similarity matrix of adj_matrix
     sim_matrix = CalSimMatrix(adj_matrix)
